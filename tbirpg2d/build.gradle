@@ -1,6 +1,7 @@
 plugins {
 	id 'org.jetbrains.kotlin.jvm' version '1.9.25'
 	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
+    id 'com.diffplug.spotless' version '6.25.0'
 	id 'org.springframework.boot' version '3.5.4'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -8,11 +9,26 @@ plugins {
 group = 'vn.chuot96'
 version = '0.0.1-SNAPSHOT'
 
+bootJar {
+    archiveFileName = "tbirpg2d.jar"
+}
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
+
+spotless {
+    kotlin {
+        ktlint()
+        target 'src/**/*.kt'
+    }
+    format('misc') {
+        target '*.gradle', '*.md', '.gitignore', '*.properties', '*.yml', '*.yaml', '*.xml', '*.json', '*.sh'
+    }
+}
+
 
 repositories {
 	mavenCentral()
