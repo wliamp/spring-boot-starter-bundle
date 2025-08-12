@@ -1,4 +1,4 @@
-package vn.chuot96.tbirpg2d
+package vn.chuot96.gamecore
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class Tbirpg2dApplication
 
 fun main(args: Array<String>) {
-	runApplication<Tbirpg2dApplication>(*args)
+    runApplication<Tbirpg2dApplication>(*args)
 }
