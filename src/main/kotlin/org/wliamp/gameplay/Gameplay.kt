@@ -1,4 +1,4 @@
-package vn.chuot96.gamecore
+package org.wliamp.gameplay
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

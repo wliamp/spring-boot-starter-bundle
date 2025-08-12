@@ -1,4 +1,4 @@
-package vn.chuot96.gamecore.queue
+package org.wliamp.gameplay.queue
 
 class MatchMaker {
     private val waitingPlayers = mutableListOf<Player>()

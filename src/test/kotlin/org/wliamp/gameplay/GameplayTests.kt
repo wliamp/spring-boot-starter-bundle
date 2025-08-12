@@ -1,10 +1,10 @@
-package vn.chuot96.gamecore
+package org.wliamp.gameplay
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class Tbirpg2dTests {
+class GameplayTests {
     @Test
     fun contextLoads() {
     }

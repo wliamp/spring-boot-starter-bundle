@@ -1,17 +1,16 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.25'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
-    id 'com.diffplug.spotless' version '6.25.0'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'maven-publish'
 }
 
-group = 'vn.chuot96'
+group = 'org.wliamp'
 version = '0.0.1'
 
 jar {
-    archiveFileName = "tbirpg2d-${version}.jar"
+    archiveFileName = "gameplay-${version}.jar"
 }
 
 java {
@@ -20,16 +19,6 @@ java {
     }
     withSourcesJar()
     withJavadocJar()
-}
-
-spotless {
-    kotlin {
-        ktlint()
-        target 'src/**/*.kt'
-    }
-    format('misc') {
-        target '*.gradle', '*.md', '.gitignore', '*.properties', '*.yml', '*.yaml', '*.xml', '*.json', '*.sh'
-    }
 }
 
 repositories {
