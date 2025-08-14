@@ -10,5 +10,7 @@ data class TokenProperties(
     var facebookTokenInfoUrl: String = "",
     var facebookAppAccessToken: String = "", // app_id|app_secret
     var zaloAppId: String = "",
-    var zaloTokenInfoUrl: String = ""
+    var zaloTokenInfoUrl: String = "",
+    var expireSeconds: Long = 3600,
+    var defaultClaims: Map<String, Any> = emptyMap()
 )

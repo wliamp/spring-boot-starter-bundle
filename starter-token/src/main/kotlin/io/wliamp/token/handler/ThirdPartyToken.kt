@@ -1,4 +1,4 @@
-package io.wliamp.token.util.verifier
+package io.wliamp.token.handler
 
 import io.wliamp.token.config.TokenProperties
 import org.springframework.web.reactive.function.client.WebClient
@@ -7,7 +7,7 @@ class ThirdPartyToken(
     private val props: TokenProperties,
     private val webClient: WebClient
 ) {
-    fun google(token: String): Boolean {
+    fun isGoogle(token: String): Boolean {
         if (props.googleClientId.isBlank() || props.googleTokenInfoUrl.isBlank()) {
             throw IllegalStateException("Google client ID or token info URL not configured")
         }
@@ -20,7 +20,7 @@ class ThirdPartyToken(
         return aud == props.googleClientId
     }
 
-    fun facebook(token: String): Boolean {
+    fun isFacebook(token: String): Boolean {
         if (props.facebookAppId.isBlank() || props.facebookTokenInfoUrl.isBlank() || props.facebookAppAccessToken.isBlank()) {
             throw IllegalStateException("Facebook config missing")
         }
@@ -33,7 +33,7 @@ class ThirdPartyToken(
         return appId == props.facebookAppId
     }
 
-    fun zalo(token: String): Boolean {
+    fun isZalo(token: String): Boolean {
         if (props.zaloAppId.isBlank() || props.zaloTokenInfoUrl.isBlank()) {
             throw IllegalStateException("Zalo config missing")
         }
