@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -54,8 +55,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/phnam2301/spring-boot-starter-library")
             credentials {
-                username = System.getenv("GITHUB_OWNER") ?: ""
-                password = System.getenv("GITHUB_TOKEN") ?: ""
+                username = findProperty("gpr.username") ?: ""
+                password = findProperty("gpr.password") ?: ""
             }
         }
     }
