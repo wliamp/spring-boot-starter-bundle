@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'io.wliamp'
-version = '0.0.1'
+version = '0.0.2'
 
 jar {
     archiveFileName = "starter-token-${version}.jar"
@@ -26,6 +26,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
@@ -55,8 +57,8 @@ publishing {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/phnam2301/spring-boot-starter-library")
             credentials {
-                username = findProperty("gpr.username") ?: ""
-                password = findProperty("gpr.password") ?: ""
+                username = findProperty("github.publisher.username") ?: ""
+                password = findProperty("github.publisher.password") ?: ""
             }
         }
     }
