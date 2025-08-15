@@ -1,7 +1,7 @@
 package io.wliamp.token
 
 import io.wliamp.token.data.Type
-import io.wliamp.token.handler.InternalToken
+import io.wliamp.token.util.InternalToken
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

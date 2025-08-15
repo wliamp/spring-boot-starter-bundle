@@ -8,9 +8,11 @@ data class TokenProperties(
     var googleTokenInfoUrl: String = "",
     var facebookAppId: String = "",
     var facebookTokenInfoUrl: String = "",
-    var facebookAppAccessToken: String = "", // app_id|app_secret
+    var facebookAppAccessToken: String = "",
+    var facebookInfoFields: String = "",
     var zaloAppId: String = "",
     var zaloTokenInfoUrl: String = "",
+    var zaloInfoFields: String = "",
     var expireSeconds: Long = 3600,
     var defaultClaims: Map<String, Any> = emptyMap()
 )

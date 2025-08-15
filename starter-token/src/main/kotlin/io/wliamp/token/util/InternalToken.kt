@@ -1,4 +1,4 @@
-package io.wliamp.token.handler
+package io.wliamp.token.util
 
 import io.wliamp.token.data.Token
 import io.wliamp.token.data.Type
@@ -20,6 +20,7 @@ class InternalToken(
     @Value("\${spring.application.name}") private val applicationName: String
 ) {
     private val issuer = applicationName
+
     private val defaultClaimsWithApp = defaultClaims + mapOf("app" to issuer)
 
     fun issue(subject: String, type: Type = Type.ACCESS, extraClaims: Map<String, Any> = emptyMap()): String {
@@ -32,10 +33,8 @@ class InternalToken(
             .claim("type", type.name)
             .claim("iat", now.epochSecond)
             .claim("exp", now.plusSeconds(defaultExpireSeconds).epochSecond)
-
         defaultClaimsWithApp.forEach { (k, v) -> claimsBuilder.claim(k, v) }
         extraClaims.forEach { (k, v) -> claimsBuilder.claim(k, v) }
-
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsBuilder.build())).tokenValue
     }
 
@@ -97,14 +96,9 @@ class InternalToken(
         val oldClaims = getClaims(token).toMutableMap()
         val subject = oldClaims["sub"]?.toString() ?: throw IllegalArgumentException("Invalid token")
         val type = getType(token)
-
-        // Remove JWT time claims, new issue() sẽ tạo iat/exp mới
         oldClaims.remove("iat")
         oldClaims.remove("exp")
-
-        // Giữ lại các claims còn lại
         val extraClaims = oldClaims.filterKeys { it != "sub" && it != "type" }
-
         return issue(subject, type, extraClaims)
     }
 }
