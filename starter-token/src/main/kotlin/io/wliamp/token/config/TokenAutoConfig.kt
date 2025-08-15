@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtEncoder
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
@@ -35,7 +35,7 @@ class TokenAutoConfig(private val props: TokenProperties,
 
     @Bean
     @ConditionalOnMissingBean
-    fun internal(jwtEncoder: JwtEncoder, jwtDecoder: JwtDecoder): InternalToken {
+    fun internal(jwtEncoder: JwtEncoder, jwtDecoder: ReactiveJwtDecoder): InternalToken {
         return InternalToken(
             jwtEncoder = jwtEncoder,
             jwtDecoder = jwtDecoder,

@@ -3,18 +3,19 @@ package io.wliamp.token.util
 import io.wliamp.token.data.Token
 import io.wliamp.token.data.Type
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
-import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.time.Instant
 
 @Component
 class InternalToken(
     private val jwtEncoder: JwtEncoder,
-    private val jwtDecoder: JwtDecoder,
+    private val jwtDecoder: ReactiveJwtDecoder,
     @Value("\${token.default-expire-seconds:3600}") private val defaultExpireSeconds: Long,
     @Value("\${token.default-claims:}") private val defaultClaims: Map<String, Any>,
     @Value("\${spring.application.name}") private val applicationName: String
@@ -23,82 +24,78 @@ class InternalToken(
 
     private val defaultClaimsWithApp = defaultClaims + mapOf("app" to issuer)
 
-    fun issue(subject: String, type: Type = Type.ACCESS, extraClaims: Map<String, Any> = emptyMap()): String {
-        val now = Instant.now()
-        val claimsBuilder = JwtClaimsSet.builder()
-            .issuer(issuer)
-            .issuedAt(now)
-            .expiresAt(now.plusSeconds(defaultExpireSeconds))
-            .subject(subject)
-            .claim("type", type.name)
-            .claim("iat", now.epochSecond)
-            .claim("exp", now.plusSeconds(defaultExpireSeconds).epochSecond)
-        defaultClaimsWithApp.forEach { (k, v) -> claimsBuilder.claim(k, v) }
-        extraClaims.forEach { (k, v) -> claimsBuilder.claim(k, v) }
-        return jwtEncoder.encode(JwtEncoderParameters.from(claimsBuilder.build())).tokenValue
-    }
+    @JvmOverloads
+    fun issue(
+        subject: String,
+        type: Type = Type.ACCESS,
+        extraClaims: Map<String, Any> = emptyMap()
+    ): Mono<String> =
+        Mono.fromCallable {
+            val now = Instant.now()
+            val claimsBuilder = JwtClaimsSet.builder()
+                .issuer(issuer)
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(defaultExpireSeconds))
+                .subject(subject)
+                .claim("type", type.name)
+                .claim("iat", now.epochSecond)
+                .claim("exp", now.plusSeconds(defaultExpireSeconds).epochSecond)
+            defaultClaimsWithApp.forEach { (k, v) -> claimsBuilder.claim(k, v) }
+            extraClaims.forEach { (k, v) -> claimsBuilder.claim(k, v) }
+            jwtEncoder.encode(JwtEncoderParameters.from(claimsBuilder.build())).tokenValue
+        }.subscribeOn(Schedulers.boundedElastic())
 
     /** Decode token */
-    fun getClaims(token: String): Map<String, Any> {
-        val jwt: Jwt = jwtDecoder.decode(token)
-        return jwt.claims
-    }
+    fun getClaims(token: String): Mono<Map<String, Any>> =
+        jwtDecoder.decode(token).map { it.claims }
 
     /** Check if token expired */
-    fun isExpired(token: String): Boolean {
-        val jwt: Jwt = jwtDecoder.decode(token)
-        return jwt.expiresAt?.isBefore(Instant.now()) ?: true
-    }
+    fun isExpired(token: String): Mono<Boolean> =
+        jwtDecoder.decode(token)
+            .map { jwt -> jwt.expiresAt?.isBefore(Instant.now()) ?: true }
 
     /** Verify token */
-    fun verify(token: String): Boolean {
-        return try {
-            jwtDecoder.decode(token)
-            true
-        } catch (ex: Exception) {
-            false
-        }
-    }
+    fun verify(token: String): Mono<Boolean> =
+        jwtDecoder.decode(token)
+            .map { true }
+            .onErrorReturn(false)
 
     /** Get token type */
-    fun getType(token: String): Type {
-        val claims = getClaims(token)
-        return Type.valueOf(claims["type"]?.toString() ?: Type.ACCESS.name)
-    }
+    fun getType(token: String): Mono<Type> =
+        getClaims(token).map { claims ->
+            Type.valueOf(claims["type"]?.toString() ?: Type.ACCESS.name)
+        }
 
     /** Retrieve summarized information about the token */
-    fun tokenInfo(token: String): Token {
-        val jwt = jwtDecoder.decode(token)
-        val claims = jwt.claims
-        val iat = jwt.issuedAt ?: Instant.EPOCH
-        val exp = jwt.expiresAt ?: Instant.EPOCH
-        return Token(
-            subject = claims["sub"]?.toString() ?: "",
-            type = getType(token),
-            issuedAt = iat,
-            expiration = exp,
-            claims = claims
-        )
-    }
+    fun tokenInfo(token: String): Mono<Token> =
+        jwtDecoder.decode(token).flatMap { jwt ->
+            getType(token).map { type ->
+                Token(
+                    subject = jwt.claims["sub"]?.toString() ?: "",
+                    type = type,
+                    issuedAt = jwt.issuedAt ?: Instant.EPOCH,
+                    expiration = jwt.expiresAt ?: Instant.EPOCH,
+                    claims = jwt.claims
+                )
+            }
+        }
 
     /** Validate that the token subject matches the expected value */
-    fun validateSubject(token: String, expected: String): Boolean {
-        return getClaims(token)["sub"] == expected
-    }
+    fun validateSubject(token: String, expected: String): Mono<Boolean> =
+        getClaims(token).map { it["sub"] == expected }
 
     /** Validate a specific claim in the token */
-    fun validateClaim(token: String, key: String, expected: String): Boolean {
-        return getClaims(token)[key] == expected
-    }
+    fun validateClaim(token: String, key: String, expected: String): Mono<Boolean> =
+        getClaims(token).map { it[key] == expected }
 
     /** Refresh the token: retain existing claims and type, generate new iat/exp */
-    fun refresh(token: String): String {
-        val oldClaims = getClaims(token).toMutableMap()
-        val subject = oldClaims["sub"]?.toString() ?: throw IllegalArgumentException("Invalid token")
-        val type = getType(token)
-        oldClaims.remove("iat")
-        oldClaims.remove("exp")
-        val extraClaims = oldClaims.filterKeys { it != "sub" && it != "type" }
-        return issue(subject, type, extraClaims)
-    }
+    fun refresh(token: String): Mono<String> =
+        getClaims(token).flatMap { oldClaims ->
+            val subject = oldClaims["sub"]?.toString() ?: return@flatMap Mono.error<String>(
+                IllegalArgumentException("Invalid token")
+            )
+            val type = Type.valueOf(oldClaims["type"]?.toString() ?: Type.ACCESS.name)
+            val extraClaims = oldClaims.filterKeys { it != "sub" && it != "type" && it != "iat" && it != "exp" }
+            issue(subject, type, extraClaims)
+        }
 }
