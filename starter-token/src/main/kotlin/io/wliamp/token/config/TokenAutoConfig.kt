@@ -1,7 +1,9 @@
 package io.wliamp.token.config
 
-import io.wliamp.token.handler.InternalToken
-import io.wliamp.token.handler.ThirdPartyToken
+import io.wliamp.token.data.FacebookParty
+import io.wliamp.token.data.GoogleParty
+import io.wliamp.token.data.ZaloParty
+import io.wliamp.token.util.InternalToken
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -17,8 +19,18 @@ class TokenAutoConfig(private val props: TokenProperties,
                       @Value("\${spring.application.name}") private val applicationName: String) {
 
     @Bean
-    fun thirdParty(): ThirdPartyToken {
-        return ThirdPartyToken(props, WebClient.builder().build())
+    fun google(): GoogleParty {
+        return GoogleParty(props, WebClient.builder().build())
+    }
+
+    @Bean
+    fun facebook(): FacebookParty {
+        return FacebookParty(props, WebClient.builder().build())
+    }
+
+    @Bean
+    fun zalo(): ZaloParty {
+        return ZaloParty(props, WebClient.builder().build())
     }
 
     @Bean
