@@ -14,7 +14,11 @@ class InternalTokenWrapper(private val internalToken: InternalToken) {
         return internalToken.issue(subject, type)
     }
 
-    fun issue(subject: String, type: Type, extraClaims: Map<String, Any>): Mono<String> {
-        return internalToken.issue(subject, type, extraClaims)
+    fun issue(subject: String, type: Type, exp: Long): Mono<String> {
+        return internalToken.issue(subject, type, exp)
+    }
+
+    fun issue(subject: String, type: Type, exp: Long, extraClaims: Map<String, Any>): Mono<String> {
+        return internalToken.issue(subject, type, exp, extraClaims)
     }
 }

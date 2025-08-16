@@ -28,6 +28,7 @@ class InternalToken(
     fun issue(
         subject: String,
         type: Type = Type.ACCESS,
+        expiresInSeconds: Long = defaultExpireSeconds,
         extraClaims: Map<String, Any> = emptyMap()
     ): Mono<String> =
         Mono.fromCallable {
@@ -35,11 +36,9 @@ class InternalToken(
             val claimsBuilder = JwtClaimsSet.builder()
                 .issuer(issuer)
                 .issuedAt(now)
-                .expiresAt(now.plusSeconds(defaultExpireSeconds))
+                .expiresAt(now.plusSeconds(expiresInSeconds))
                 .subject(subject)
                 .claim("type", type.name)
-                .claim("iat", now.epochSecond)
-                .claim("exp", now.plusSeconds(defaultExpireSeconds).epochSecond)
             defaultClaimsWithApp.forEach { (k, v) -> claimsBuilder.claim(k, v) }
             extraClaims.forEach { (k, v) -> claimsBuilder.claim(k, v) }
             jwtEncoder.encode(JwtEncoderParameters.from(claimsBuilder.build())).tokenValue
@@ -89,13 +88,15 @@ class InternalToken(
         getClaims(token).map { it[key] == expected }
 
     /** Refresh the token: retain existing claims and type, generate new iat/exp */
-    fun refresh(token: String): Mono<String> =
+    fun refresh(token: String, expiresInSeconds: Long): Mono<String> =
         getClaims(token).flatMap { oldClaims ->
-            val subject = oldClaims["sub"]?.toString() ?: return@flatMap Mono.error<String>(
-                IllegalArgumentException("Invalid token")
-            )
-            val type = Type.valueOf(oldClaims["type"]?.toString() ?: Type.ACCESS.name)
-            val extraClaims = oldClaims.filterKeys { it != "sub" && it != "type" && it != "iat" && it != "exp" }
-            issue(subject, type, extraClaims)
+            val subject = oldClaims["sub"]?.toString()
+                ?: return@flatMap Mono.error<String>(IllegalArgumentException("Missing subject"))
+            val typeStr = oldClaims["type"]?.toString()
+                ?: return@flatMap Mono.error<String>(IllegalArgumentException("Missing type"))
+            val type = Type.valueOf(typeStr)
+            val preserved = oldClaims
+                .filterKeys { it !in setOf("iat", "exp", "nbf", "sub", "type") }
+            issue(subject, type, expiresInSeconds, preserved)
         }
 }
