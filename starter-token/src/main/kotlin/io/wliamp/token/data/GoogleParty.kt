@@ -12,34 +12,34 @@ class GoogleParty(
 ) : OauthParty {
     private val party = "google"
 
-    override fun verify(token: String): Mono<Boolean> {
+    override fun verify(token: String): Mono<Boolean> =
         if (props.googleClientId.isBlank() || props.googleTokenInfoUrl.isBlank()) {
-            return Mono.error(IllegalStateException("Google configuration missing"))
+            Mono.error(IllegalStateException("Google configuration missing"))
+        } else {
+            webClient.get()
+                .uri("${props.googleTokenInfoUrl}?id_token=$token")
+                .retrieve()
+                .onStatus({ it.isError }) { response ->
+                    Mono.error(IllegalStateException("Google verify failed: ${response.statusCode()}"))
+                }
+                .bodyToMono(Map::class.java)
+                .map { response ->
+                    val aud = response["aud"]?.toString()
+                    aud == props.googleClientId
+                }
+                .onErrorReturn(false)
         }
-        return webClient.get()
-            .uri("${props.googleTokenInfoUrl}?id_token=$token")
-            .retrieve()
-            .onStatus({ it.isError }) { response ->
-                Mono.error(IllegalStateException("Google verify failed: ${response.statusCode()}"))
-            }
-            .bodyToMono(Map::class.java)
-            .map { response ->
-                val aud = response["aud"]?.toString()
-                aud == props.googleClientId
-            }
-            .onErrorReturn(false)
-    }
 
-    override fun getInfo(token: String): Mono<Map<String, Any>> {
+    override fun getInfo(token: String): Mono<Map<String, Any>> =
         if (props.googleTokenInfoUrl.isBlank()) {
-            return Mono.error(IllegalStateException("Google config missing"))
+            Mono.error(IllegalStateException("Google config missing"))
+        } else {
+            webClient.get()
+                .uri("${props.googleTokenInfoUrl}?id_token=$token")
+                .retrieve()
+                .onStatus({ it.isError }) { response ->
+                    Mono.error(IllegalStateException("Google getInfo failed: ${response.statusCode()}"))
+                }
+                .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
         }
-        return webClient.get()
-            .uri("${props.googleTokenInfoUrl}?id_token=$token")
-            .retrieve()
-            .onStatus({ it.isError }) { response ->
-                Mono.error(IllegalStateException("Google getInfo failed: ${response.statusCode()}"))
-            }
-            .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-    }
 }
