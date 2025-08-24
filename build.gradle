@@ -78,12 +78,12 @@ subprojects {
             }
         }
     }
+}
 
-    signing {
-        if (!version.endsWith("SNAPSHOT")) {
-            useGpgCmd()
-            sign publishing.publications.mavenJava
-        }
+signing {
+    if (!version.endsWith("SNAPSHOT")) {
+        useGpgCmd()
+        sign publishing.publications.mavenJava
     }
 }
 

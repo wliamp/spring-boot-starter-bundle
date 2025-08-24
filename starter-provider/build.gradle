@@ -1,0 +1,33 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.spring'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'maven-publish'
+    id 'signing'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'spring-boot-starter-provider'
+            version = '0.0.1'
+            pom {
+                name.set('Spring Boot Starter Provider')
+                description.set('Custom Spring Boot starter for providers support')
+            }
+        }
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
