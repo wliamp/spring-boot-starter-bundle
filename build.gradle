@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'io.github.wliamp'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 allprojects {
     repositories {
@@ -26,6 +26,7 @@ subprojects {
     apply plugin: 'signing'
 
     group = rootProject.group
+    version = rootProject.version
 
     dependencies {
         implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -78,19 +79,19 @@ subprojects {
             }
         }
     }
-}
-
-signing {
-    if (!version.endsWith("SNAPSHOT")) {
-        useGpgCmd()
-        sign publishing.publications.mavenJava
+    signing {
+        if (!version.endsWith("SNAPSHOT")) {
+            useGpgCmd()
+            sign publishing.publications.mavenJava
+        }
     }
 }
 
 nexusPublishing {
     repositories {
         sonatype {
-            stagingProfileId = findProperty("central.portal.id") ?: ""
+            nexusUrl = uri("https://ossrh-staging-api.central.sonatype.com/service/local/")
+            snapshotRepositoryUrl = uri("https://central.sonatype.com/repository/maven-snapshots/")
             username = findProperty("central.portal.username") ?: ""
             password = findProperty("central.portal.password") ?: ""
         }
