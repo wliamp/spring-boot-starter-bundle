@@ -4,18 +4,19 @@ plugins {
 }
 
 dependencies {
-    api 'io.github.wliamp:spring-boot-starter-algorithm:1.0.0'
-    api 'io.github.wliamp:spring-boot-starter-token:1.0.0'
+    api 'io.github.wliamp:spring-boot-starter-reactive-algorithm:0.0.1'
+    api 'io.github.wliamp:spring-boot-starter-reactive-provider:0.0.1'
+    api 'io.github.wliamp:spring-boot-starter-reactive-token:0.0.1'
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = 'spring-boot-starter'
+            artifactId = 'spring-boot-starter-reactive'
             version = '0.0.1'
             pom {
-                name.set('Spring Boot Starter')
-                description.set('Custom Spring Boot starter for token utilities, logic/core algorithms')
+                name.set('Spring Boot Starter Reactive')
+                description.set('Custom Spring Boot starter reactive for token utilities, logic/core algorithms')
             }
         }
     }

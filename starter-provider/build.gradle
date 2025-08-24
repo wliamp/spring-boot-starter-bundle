@@ -8,21 +8,16 @@ plugins {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.jetbrains.kotlin:kotlin-reflect'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = 'spring-boot-starter-provider'
+            artifactId = 'spring-boot-starter-reactive-provider'
             version = '0.0.1'
             pom {
-                name.set('Spring Boot Starter Provider')
-                description.set('Custom Spring Boot starter for providers support')
+                name.set('Spring Boot Starter Reactive Provider')
+                description.set('Custom Spring Boot starter reactive for providers support')
             }
         }
     }
