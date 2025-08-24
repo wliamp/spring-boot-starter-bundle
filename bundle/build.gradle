@@ -1,0 +1,22 @@
+plugins {
+    id 'maven-publish'
+    id 'signing'
+}
+
+dependencies {
+    api 'io.github.wliamp:spring-boot-starter-algorithm:1.0.0'
+    api 'io.github.wliamp:spring-boot-starter-token:1.0.0'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'spring-boot-starter'
+            version = '0.0.1'
+            pom {
+                name.set('Spring Boot Starter')
+                description.set('Custom Spring Boot starter for token utilities, logic/core algorithms')
+            }
+        }
+    }
+}
