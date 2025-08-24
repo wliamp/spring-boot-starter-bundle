@@ -1,7 +1,7 @@
 package io.github.wliamp.token.util
 
-import io.wliamp.token.data.Token
-import io.wliamp.token.data.Type
+import io.github.wliamp.token.data.Token
+import io.github.wliamp.token.data.Type
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoder
@@ -13,7 +13,7 @@ import reactor.core.scheduler.Schedulers
 import java.time.Instant
 
 @Component
-class InternalToken(
+class TokenUtil(
     private val jwtEncoder: JwtEncoder,
     private val jwtDecoder: ReactiveJwtDecoder,
     @Value("\${token.default-expire-seconds:3600}") private val defaultExpireSeconds: Long,
