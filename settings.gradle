@@ -1,0 +1,5 @@
+rootProject.name = 'starter-bundle'
+
+include 'algorithm', 'token'
+project(':algorithm').projectDir = file('starter-algorithm')
+project(':token').projectDir = file('starter-token')

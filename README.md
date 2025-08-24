@@ -4,7 +4,7 @@ This repository contains modular Spring Boot starter libraries designed for back
 
 ## 📁 Projects
 
-- [Game Logic Starter](./starter-game) – Stateless service for handling core game logic, including player actions and in-game event processing, independent of session state.
+- [Game Logic Starter](starter-algorithm) – Stateless service for handling core game logic, including player actions and in-game event processing, independent of session state.
 
 - [Token Handler Starter](./starter-token) – Provides token generation, validation, and lifecycle management for secure inter-service communication.
   
