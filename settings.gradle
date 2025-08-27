@@ -1,4 +1,4 @@
-rootProject.name = 'starter-bundle'
+rootProject.name = 'starter'
 
 include 'all',
     'agr',

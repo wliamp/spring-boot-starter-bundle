@@ -16,9 +16,10 @@ publishing {
             pom {
                 name.set('Spring Boot Starter Reactive')
                 description.set('Custom Spring Boot starter reactive for ' +
-                    'token utilities, ' +
-                    'logic/core algorithms, ' +
-                    'and providers support.')
+                    'business algorithms, ' +
+                    'providers support, ' +
+                    'and token utilities' +
+                    '.')
             }
         }
     }

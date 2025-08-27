@@ -79,6 +79,7 @@ subprojects {
             }
         }
     }
+
     signing {
         if (!version.endsWith("SNAPSHOT")) {
             useGpgCmd()

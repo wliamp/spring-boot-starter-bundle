@@ -15,9 +15,10 @@ publishing {
             pom {
                 name.set('Spring Boot Starter Reactive Provider')
                 description.set('Custom Spring Boot starter reactive for ' +
-                    'providers support: ' +
-                    'verify(Oauth/Otp) ' +
-                    'and payment gateways')
+                    'providers support include: ' +
+                    'payment gateways ' +
+                    'and verify(Oauth/Otp)' +
+                    '.')
             }
         }
     }

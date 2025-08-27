@@ -16,7 +16,9 @@ publishing {
             artifactId = 'spring-boot-starter-reactive-algorithm'
             pom {
                 name.set('Spring Boot Starter Reactive Algorithm')
-                description.set('Custom Spring Boot starter reactive for logic/core algorithms')
+                description.set('Custom Spring Boot starter reactive for ' +
+                    'business algorithms' +
+                    '.')
             }
         }
     }

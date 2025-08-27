@@ -15,10 +15,11 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifactId = 'spring-boot-starter-reactive-token'
-            version = '0.0.1'
             pom {
                 name.set('Spring Boot Starter Reactive Token')
-                description.set('Custom Spring Boot starter reactive for token utilities')
+                description.set('Custom Spring Boot starter reactive for ' +
+                    'token utilities' +
+                    '.')
             }
         }
     }

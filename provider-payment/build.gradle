@@ -17,7 +17,8 @@ publishing {
             pom {
                 name.set('Spring Boot Starter Reactive Provider Payment')
                 description.set('Custom Spring Boot starter reactive for ' +
-                    'payment gateway provider')
+                    'payment gateway providers' +
+                    '.')
             }
         }
     }
