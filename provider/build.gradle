@@ -1,0 +1,24 @@
+plugins {
+    id 'maven-publish'
+    id 'signing'
+}
+
+dependencies {
+    api 'io.github.wliamp:spring-boot-starter-reactive-provider-verify:0.0.1'
+    api 'io.github.wliamp:spring-boot-starter-reactive-provider-payment:0.0.1'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'spring-boot-starter-reactive'
+            pom {
+                name.set('Spring Boot Starter Reactive')
+                description.set('Custom Spring Boot starter reactive for ' +
+                    'token utilities, ' +
+                    'logic/core algorithms, ' +
+                    'and providers support.')
+            }
+        }
+    }
+}
