@@ -1,10 +1,10 @@
 package io.github.wliamp.token.config
 
-import com.nimbusds.jose.jwk.JWKSet
-import com.nimbusds.jose.jwk.RSAKey
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
+import io.github.wliamp.token.data.EnvSecretLoader
+import io.github.wliamp.token.data.KeySetManager
+import io.github.wliamp.token.data.SecretLoader
 import io.github.wliamp.token.util.TokenUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -15,10 +15,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
-import java.security.KeyPairGenerator
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
-import java.util.UUID
 
 @AutoConfiguration
 @EnableConfigurationProperties(TokenProperties::class)
@@ -27,25 +23,21 @@ class TokenAutoConfig(
     @Value("\${spring.application.name}") private val applicationName: String
 ) {
     @Bean
-    fun rsaKey(): RSAKey =
-        KeyPairGenerator.getInstance("RSA").apply {
-            initialize(2048)
-        }.genKeyPair().let { keyPair ->
-            RSAKey.Builder(keyPair.public as RSAPublicKey)
-                .privateKey(keyPair.private as RSAPrivateKey)
-                .keyID(UUID.randomUUID().toString())
-                .build()
-        }
+    fun secretLoader(): SecretLoader = EnvSecretLoader(props)
 
     @Bean
-    fun jwkSource(rsaKey: RSAKey): JWKSource<SecurityContext> = ImmutableJWKSet(JWKSet(rsaKey))
+    fun jwkSource(keySetManager: KeySetManager): JWKSource<SecurityContext> =
+        keySetManager.signingJwkSource()
 
     @Bean
-    fun jwtEncoder(jwkSource: JWKSource<SecurityContext>): JwtEncoder = NimbusJwtEncoder(jwkSource)
+    fun jwtEncoder(jwkSource: JWKSource<SecurityContext>): JwtEncoder =
+        NimbusJwtEncoder(jwkSource)
 
     @Bean
-    fun reactiveJwtDecoder(rsaKey: RSAKey): ReactiveJwtDecoder =
-        NimbusReactiveJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build()
+    fun reactiveJwtDecoder(keySetManager: KeySetManager): ReactiveJwtDecoder =
+        NimbusReactiveJwtDecoder.withPublicKey(
+            keySetManager.currentKeySet().active().toRSAPublicKey()
+        ).build()
 
     @Bean
     @ConditionalOnMissingBean
