@@ -3,10 +3,12 @@ rootProject.name = 'starter-bundle'
 include 'all',
     'agr',
     'pro',
+    'pro-pay',
     'pro-vef',
     'tk'
 project(':all').projectDir = file('bundle')
 project(':agr').projectDir = file('algorithm')
 project(':pro').projectDir = file('provider')
+project(':pro-pay').projectDir = file('provider-payment')
 project(':pro-vef').projectDir = file('provider-verify')
 project(':tk').projectDir = file('token')

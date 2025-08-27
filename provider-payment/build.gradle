@@ -1,0 +1,28 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.spring'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'maven-publish'
+    id 'signing'
+}
+
+dependencies {
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'spring-boot-starter-reactive-provider-payment'
+            pom {
+                name.set('Spring Boot Starter Reactive Provider Payment')
+                description.set('Custom Spring Boot starter reactive for ' +
+                    'payment gateway provider')
+            }
+        }
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
