@@ -13,10 +13,10 @@ dependencies {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = 'spring-boot-starter-reactive-provider'
+            artifactId = 'spring-boot-starter-reactive-provider-verify'
             pom {
-                name.set('Spring Boot Starter Reactive Provider')
-                description.set('Custom Spring Boot starter reactive for providers support')
+                name.set('Spring Boot Starter Reactive Provider Verify')
+                description.set('Custom Spring Boot starter reactive for verify providers')
             }
         }
     }
