@@ -27,19 +27,9 @@ internal class AuthorizeNetGtw internal constructor(
 
     private fun processTransaction(transactionType: String, body: Any): Mono<Any> =
         Mono.defer {
-            val requestBody = buildTransactionRequestJson(transactionType, body)
-            webClient.post()
-                .uri(props.baseUrl)
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(Map::class.java)
-                .map { resp -> mapOf("success" to (resp["transactionResponse"] != null), "resp" to resp) }
-        }
-
-    private fun buildTransactionRequestJson(transactionType: String, body: Any): Map<String, Any> =
-        @Suppress("UNCHECKED_CAST")
-        (body as Map<String, Any>).let { p ->
-            mapOf(
+            @Suppress("UNCHECKED_CAST")
+            val p = body as Map<String, Any>
+            val requestBody = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to mapOf(
                         "name" to props.apiLoginId,
@@ -65,6 +55,17 @@ internal class AuthorizeNetGtw internal constructor(
                     )
                 )
             )
+            webClient.post()
+                .uri(props.baseUrl)
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map::class.java)
+                .map { resp ->
+                    mapOf(
+                        "success" to (resp["transactionResponse"] != null),
+                        "resp" to resp
+                    )
+                }
         }
 }
 
