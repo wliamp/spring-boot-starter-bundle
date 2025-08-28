@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import kotlin.collections.get
 
-class GoogleOauth(
+internal class GoogleOauth internal constructor(
     private val props: VerifyProviderProperties.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {

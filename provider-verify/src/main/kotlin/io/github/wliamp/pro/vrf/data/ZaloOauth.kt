@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import kotlin.collections.get
 
-class ZaloOauth(
+internal class ZaloOauth internal constructor(
     private val props: VerifyProviderProperties.ZaloProps,
     private val webClient: WebClient
 ) : IOauth {

@@ -14,20 +14,37 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
 @EnableConfigurationProperties(VerifyProviderProperties::class)
-class VerifyProviderAutoConfig(
-    private val props: VerifyProviderProperties,
+internal class VerifyProviderAutoConfig private constructor(
+    private val facebookProps: VerifyProviderProperties.FacebookProps,
+    private val googleProps: VerifyProviderProperties.GoogleProps,
+    private val zaloProps: VerifyProviderProperties.ZaloProps
 ) {
     @Bean
-    @ConditionalOnProperty(prefix = "oauth.facebook", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun fb(): IOauth = FacebookOauth(props, WebClient.builder().build())
+    @ConditionalOnProperty(
+        prefix = "oauth.facebook",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun fb(): IOauth = FacebookOauth(facebookProps, WebClient.builder().build())
 
     @Bean
-    @ConditionalOnProperty(prefix = "oauth.google", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun gg(): IOauth = GoogleOauth(props, WebClient.builder().build())
+    @ConditionalOnProperty(
+        prefix = "oauth.google",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun gg(): IOauth = GoogleOauth(googleProps, WebClient.builder().build())
 
     @Bean
-    @ConditionalOnProperty(prefix = "oauth.zalo", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun zl(): IOauth = ZaloOauth(props, WebClient.builder().build())
+    @ConditionalOnProperty(
+        prefix = "oauth.zalo",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun zl(): IOauth = ZaloOauth(zaloProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
@@ -35,5 +52,9 @@ class VerifyProviderAutoConfig(
         fb: IOauth,
         gg: IOauth,
         zl: IOauth
-    ): OauthProvider = OauthProvider(fb, gg, zl)
+    ): OauthProvider = OauthProvider(
+        fb,
+        gg,
+        zl
+    )
 }

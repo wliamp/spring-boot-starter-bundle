@@ -3,7 +3,7 @@ package io.github.wliamp.pro.vrf.config
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "verify")
-data class VerifyProviderProperties(
+internal data class VerifyProviderProperties(
     var facebook: FacebookProps = FacebookProps(),
     var google: GoogleProps = GoogleProps(),
     var zalo: ZaloProps = ZaloProps()

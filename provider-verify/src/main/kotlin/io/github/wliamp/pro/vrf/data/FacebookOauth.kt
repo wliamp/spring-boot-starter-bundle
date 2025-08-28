@@ -6,7 +6,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import kotlin.collections.get
 
-class FacebookOauth(
+internal class FacebookOauth internal constructor(
     private val props: VerifyProviderProperties.FacebookProps,
     private val webClient: WebClient
 ) : IOauth {
