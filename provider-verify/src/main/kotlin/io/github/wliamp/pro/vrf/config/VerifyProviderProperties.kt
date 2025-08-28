@@ -2,17 +2,17 @@ package io.github.wliamp.pro.vrf.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
-@ConfigurationProperties(prefix = "token")
+@ConfigurationProperties(prefix = "verify")
 data class VerifyProviderProperties(
     var facebook: FacebookProps = FacebookProps(),
     var google: GoogleProps = GoogleProps(),
     var zalo: ZaloProps = ZaloProps()
 ) {
     data class FacebookProps(
+        var baseUrl: String = "https://graph.facebook.com",
         var appId: String = "",
-        var tokenInfoUrl: String = "",
-        var appAccessToken: String = "",
-        var infoFields: String = ""
+        var accessToken: String = "",
+        var fields: String = ""
     )
 
     data class GoogleProps(
