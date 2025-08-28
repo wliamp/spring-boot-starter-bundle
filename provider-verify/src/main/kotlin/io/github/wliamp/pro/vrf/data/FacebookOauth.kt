@@ -29,29 +29,23 @@ class FacebookOauth(
                     data?.get("app_id")?.toString() == it.appId
                 }
                 .onErrorReturn(false)
-        } ?: Mono.error(IllegalStateException("Missing parameter " +
-            "'verify.facebook.base-url' " +
-            "or 'verify.facebook.app-id' " +
-            "or 'verify.facebook.access-token' " +
-            "for Facebook configuration"))
+        } ?: Mono.error(
+            IllegalStateException(
+                "Missing parameter " +
+                    "'verify.facebook.app-id' " +
+                    "or 'verify.facebook.access-token' " +
+                    "for Facebook configuration"
+            )
+        )
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        props.takeIf {
-            it.baseUrl.isNotBlank()
-        }?.let { p ->
-            webClient
-                .get()
-                .uri(p.fields.takeIf {
-                    it.isNotBlank()
-                }?.let {
-                    "${p.baseUrl}/me?access_token=$token&fields=${p.fields}"
-                } ?: "${p.baseUrl}/me?access_token=$token")
-                .retrieve()
-                .onStatus({ status -> status.isError }) { response ->
-                    Mono.error(IllegalStateException("Facebook get information failed: ${response.statusCode()}"))
-                }
-                .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-        } ?: Mono.error(IllegalStateException("Missing parameter " +
-            "'verify.facebook.base-url' " +
-            "for Facebook configuration"))
+        webClient.get()
+            .uri(props.fields.takeIf { it.isNotBlank() }
+                ?.let { "${props.baseUrl}/me?access_token=$token&fields=${props.fields}" }
+                ?: "${props.baseUrl}/me?access_token=$token")
+            .retrieve()
+            .onStatus({ status -> status.isError }) { response ->
+                Mono.error(IllegalStateException("Facebook get information failed: ${response.statusCode()}"))
+            }
+            .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
 }
