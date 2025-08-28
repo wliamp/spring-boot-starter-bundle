@@ -15,10 +15,13 @@ class VnPayGtw(
     private val props: PaymentProviderProps,
     private val webClient: WebClient
 ) : IGtw {
+    private val provider = "vnPay"
 
+    @Deprecated("Not supported by VNPay")
     override fun authorize(headers: Any, body: Any): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay authorize-only unsupported"))
 
+    @Deprecated("Not supported by VNPay")
     override fun capture(headers: Any, body: Any): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay capture unsupported"))
 
@@ -39,13 +42,10 @@ class VnPayGtw(
                 "vnp_IpAddr" to p["ipAddress"]!!,
                 "vnp_CreateDate" to DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now())
             )
-
             val queryStr = query.entries
                 .sortedBy { it.key }
                 .joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, StandardCharsets.UTF_8)}" }
-
             val secureHash = hmacSHA512(props.vnPay.secretKey, queryStr)
-
             Mono.just(
                 mapOf("paymentUrl" to "${props.vnPay.baseUrl}?$queryStr&vnp_SecureHash=$secureHash")
             )
@@ -67,14 +67,10 @@ class VnPayGtw(
                 "vnp_TransactionDate" to p["transactionDate"]!!,
                 "vnp_CreateBy" to (p["createBy"] ?: "system")
             )
-
             val query = refundBody.entries.sortedBy { it.key }
                 .joinToString("&") { "${it.key}=${it.value}" }
-
             val secureHash = hmacSHA512(props.vnPay.secretKey, query)
-
             val finalBody = refundBody + ("vnp_SecureHash" to secureHash)
-
             webClient.post()
                 .uri("${props.vnPay.baseUrl}/merchant_webapi/api/transaction")
                 .bodyValue(finalBody)

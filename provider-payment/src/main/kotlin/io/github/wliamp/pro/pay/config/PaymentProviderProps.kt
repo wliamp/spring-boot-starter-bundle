@@ -4,7 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "provider.payment")
 data class PaymentProviderProps(
-    var vnPay: VnPayProps = VnPayProps()
+    var vnPay: VnPayProps = VnPayProps(),
+    var authorizeNet: AuthorizeNetProps = AuthorizeNetProps()
 ) {
     data class VnPayProps(
         var version: String = "2.1.0",
@@ -15,5 +16,11 @@ data class PaymentProviderProps(
         var secretKey: String = "",
         var tmnCode: String = "",
         var hashSecret: String = ""
+    )
+
+    data class AuthorizeNetProps(
+        var url: String = "https://apitest.authorize.net/rest/v1/transactions",
+        var apiLoginId: String = "",
+        var transactionKey: String = "",
     )
 }
