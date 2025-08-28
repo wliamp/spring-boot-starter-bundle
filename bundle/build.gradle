@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     api 'io.github.wliamp:spring-boot-starter-reactive-algorithm:0.0.1'
-    api 'io.github.wliamp:spring-boot-starter-reactive-provider:0.0.1'
+    api 'io.github.wliamp:spring-boot-starter-reactive-provider:0.0.2'
     api 'io.github.wliamp:spring-boot-starter-reactive-token:0.0.1'
 }
 
