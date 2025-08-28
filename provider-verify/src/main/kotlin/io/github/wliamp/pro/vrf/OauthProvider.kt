@@ -1,5 +1,6 @@
 package io.github.wliamp.pro.vrf
 
+import io.github.wliamp.pro.vrf.oauth.IOauth
 import org.springframework.stereotype.Component
 
 @Component
