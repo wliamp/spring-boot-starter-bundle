@@ -17,9 +17,11 @@ class VnPayGtw(
 ) : IGtw {
     private val provider = "vnPay"
 
+    @Deprecated("Not supported by VNPay")
     override fun authorize(headers: Any, body: Any): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay authorize-only unsupported"))
 
+    @Deprecated("Not supported by VNPay")
     override fun capture(headers: Any, body: Any): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay capture unsupported"))
 
