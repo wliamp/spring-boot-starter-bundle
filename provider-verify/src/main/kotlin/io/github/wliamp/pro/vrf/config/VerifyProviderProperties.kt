@@ -12,7 +12,5 @@ data class VerifyProviderProperties(
     var facebookInfoFields: String = "",
     var zaloAppId: String = "",
     var zaloTokenInfoUrl: String = "",
-    var zaloInfoFields: String = "",
-    var expireSeconds: Long = 3600,
-    var defaultClaims: Map<String, Any> = emptyMap()
+    var zaloInfoFields: String = ""
 )

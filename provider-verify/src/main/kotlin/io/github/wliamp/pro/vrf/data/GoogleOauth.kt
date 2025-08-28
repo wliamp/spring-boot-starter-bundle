@@ -13,9 +13,10 @@ class GoogleOauth(
     private val provider = "google"
 
     override fun verify(token: String): Mono<Boolean> =
-        if (props.googleClientId.isBlank() || props.googleTokenInfoUrl.isBlank()) {
-            Mono.error(IllegalStateException("Google configuration missing"))
-        } else {
+        props.takeIf {
+            it.googleClientId.isNotBlank() &&
+                it.googleTokenInfoUrl.isNotBlank()
+        }?.let {
             webClient.get()
                 .uri("${props.googleTokenInfoUrl}?id_token=$token")
                 .retrieve()
@@ -28,18 +29,18 @@ class GoogleOauth(
                     aud == props.googleClientId
                 }
                 .onErrorReturn(false)
-        }
+        } ?: Mono.error(IllegalStateException("Google configuration missing"))
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        if (props.googleTokenInfoUrl.isBlank()) {
-            Mono.error(IllegalStateException("Google config missing"))
-        } else {
-            webClient.get()
-                .uri("${props.googleTokenInfoUrl}?id_token=$token")
-                .retrieve()
-                .onStatus({ it.isError }) { response ->
-                    Mono.error(IllegalStateException("Google getInfo failed: ${response.statusCode()}"))
-                }
-                .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-        }
+        props.googleTokenInfoUrl
+            .takeIf { it.isNotBlank() }
+            ?.let {
+                webClient.get()
+                    .uri("$it?id_token=$token")
+                    .retrieve()
+                    .onStatus({ it.isError }) { response ->
+                        Mono.error(IllegalStateException("Google get information failed: ${response.statusCode()}"))
+                    }
+                    .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
+            } ?: Mono.error(IllegalStateException("Google configuration missing"))
 }

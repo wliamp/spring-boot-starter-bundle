@@ -13,26 +13,26 @@ class ZaloOauth(
     private val provider = "zalo"
 
     override fun verify(token: String): Mono<Boolean> =
-        if (props.zaloTokenInfoUrl.isBlank() || props.zaloAppId.isBlank()) {
-            Mono.error(IllegalStateException("Zalo configuration missing"))
-        } else {
+        props.takeIf {
+            it.zaloTokenInfoUrl.isNotBlank()
+                && it.zaloAppId.isNotBlank()
+        }?.let {
             webClient.get()
                 .uri("${props.zaloTokenInfoUrl}?access_token=$token")
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
-                    Mono.just(IllegalStateException("Zalo verify failed: ${response.statusCode()}"))
+                    Mono.error(IllegalStateException("Zalo verify failed: ${response.statusCode()}"))
                 }
                 .bodyToMono(Map::class.java)
-                .map { response ->
-                    response["id"] != null
-                }
+                .map { response -> response["id"] != null }
                 .onErrorReturn(false)
-        }
+        } ?: Mono.error(IllegalStateException("Zalo configuration missing"))
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        if (props.zaloTokenInfoUrl.isBlank() || props.zaloAppId.isBlank()) {
-            Mono.error(IllegalStateException("Zalo configuration missing"))
-        } else {
+        props.takeIf {
+            it.zaloTokenInfoUrl.isNotBlank() &&
+                it.zaloAppId.isNotBlank()
+        }?.let {
             webClient.get()
                 .uri("${props.zaloTokenInfoUrl}?access_token=$token&fields=${props.zaloInfoFields}")
                 .retrieve()
@@ -40,5 +40,5 @@ class ZaloOauth(
                     Mono.error(IllegalStateException("Zalo get information failed: ${response.statusCode()}"))
                 }
                 .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-        }
+        } ?: Mono.error(IllegalStateException("Zalo configuration missing"))
 }
