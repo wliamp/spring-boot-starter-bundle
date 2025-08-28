@@ -26,58 +26,89 @@ internal class VnPayGtw internal constructor(
         Mono.error(UnsupportedOperationException("VNPay capture unsupported"))
 
     override fun sale(headers: Any, body: Any): Mono<Any> =
-        @Suppress("UNCHECKED_CAST")
-        (body as Map<String, String>).let { p ->
-            val query = mapOf(
-                "vnp_Version" to props.version,
-                "vnp_Command" to "pay",
-                "vnp_TmnCode" to props.tmnCode,
-                "vnp_Amount" to (p["amount"]!!.toInt() * 100).toString(),
-                "vnp_CurrCode" to "VND",
-                "vnp_TxnRef" to p["orderId"]!!,
-                "vnp_OrderInfo" to p["description"]!!,
-                "vnp_OrderType" to (p["orderType"] ?: "other"),
-                "vnp_Locale" to (p["locale"] ?: "vn"),
-                "vnp_ReturnUrl" to props.returnUrl,
-                "vnp_IpAddr" to p["ipAddress"]!!,
-                "vnp_CreateDate" to DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now())
+        props.takeIf {
+            it.hashSecret.isNotBlank() &&
+                it.tmnCode.isNotBlank() &&
+                it.returnUrl.isNotBlank()
+        }?.let { p ->
+            @Suppress("UNCHECKED_CAST")
+            (body as Map<String, String>).let { m ->
+                val query = mapOf(
+                    "vnp_Version" to p.version,
+                    "vnp_Command" to "pay",
+                    "vnp_TmnCode" to p.tmnCode,
+                    "vnp_Amount" to (m["amount"]!!.toInt() * 100).toString(),
+                    "vnp_CurrCode" to "VND",
+                    "vnp_TxnRef" to m["orderId"]!!,
+                    "vnp_OrderInfo" to m["description"]!!,
+                    "vnp_OrderType" to (m["orderType"] ?: "other"),
+                    "vnp_Locale" to (m["locale"] ?: "vn"),
+                    "vnp_ReturnUrl" to p.returnUrl,
+                    "vnp_IpAddr" to m["ipAddress"]!!,
+                    "vnp_CreateDate" to DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now())
+                )
+                val queryStr = query.entries
+                    .sortedBy { it.key }
+                    .joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, StandardCharsets.UTF_8)}" }
+                val secureHash = hmacSHA512(p.hashSecret, queryStr)
+                Mono.just(mapOf("paymentUrl" to "${p.baseUrl}?$queryStr&vnp_SecureHash=$secureHash"))
+            }
+        } ?: Mono.error(
+            IllegalStateException(
+                "Missing parameter " +
+                    "'provider.payment.vn-pay.hash-secret' " +
+                    "or 'provider.payment.vn-pay.tmn-code' " +
+                    "or 'provider.payment.vn-pay.return-url' " +
+                    "for VNPay configuration"
             )
-            val queryStr = query.entries
-                .sortedBy { it.key }
-                .joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, StandardCharsets.UTF_8)}" }
-            val secureHash = hmacSHA512(props.secretKey, queryStr)
-            Mono.just(
-                mapOf("paymentUrl" to "${props.baseUrl}?$queryStr&vnp_SecureHash=$secureHash")
-            )
-        }
+        )
 
     override fun refund(headers: Any, body: Any): Mono<Any> =
-        @Suppress("UNCHECKED_CAST")
-        (body as Map<String, String>).let { p ->
-            val refundBody = mapOf(
-                "vnp_RequestId" to UUID.randomUUID().toString(),
-                "vnp_Version" to props.version,
-                "vnp_Command" to "refund",
-                "vnp_TmnCode" to props.tmnCode,
-                "vnp_TransactionType" to (p["transactionType"] ?: "02"),
-                "vnp_TxnRef" to p["orderId"]!!,
-                "vnp_Amount" to (p["amount"]!!.toInt() * 100).toString(),
-                "vnp_OrderInfo" to "Refund order ${p["orderId"]}",
-                "vnp_TransactionNo" to p["transactionNo"]!!,
-                "vnp_TransactionDate" to p["transactionDate"]!!,
-                "vnp_CreateBy" to (p["createBy"] ?: "system")
+        props.takeIf {
+            it.hashSecret.isNotBlank() &&
+                it.tmnCode.isNotBlank()
+        }?.let { p ->
+            @Suppress("UNCHECKED_CAST")
+            (body as Map<String, String>).let { m ->
+                val refundBody = mapOf(
+                    "vnp_RequestId" to UUID.randomUUID().toString(),
+                    "vnp_Version" to p.version,
+                    "vnp_Command" to "refund",
+                    "vnp_TmnCode" to p.tmnCode,
+                    "vnp_TransactionType" to (m["transactionType"] ?: "02"),
+                    "vnp_TxnRef" to m["orderId"]!!,
+                    "vnp_Amount" to (m["amount"]!!.toInt() * 100).toString(),
+                    "vnp_OrderInfo" to "Refund order ${m["orderId"]}",
+                    "vnp_TransactionNo" to m["transactionNo"]!!,
+                    "vnp_TransactionDate" to m["transactionDate"]!!,
+                    "vnp_CreateBy" to (m["createBy"] ?: "system")
+                )
+                val query = refundBody.entries
+                    .sortedBy { it.key }
+                    .joinToString("&") { "${it.key}=${it.value}" }
+                val secureHash = hmacSHA512(p.hashSecret, query)
+                val finalBody = refundBody + ("vnp_SecureHash" to secureHash)
+                webClient.post()
+                    .uri("${p.baseUrl}/merchant_webapi/api/transaction")
+                    .bodyValue(finalBody)
+                    .retrieve()
+                    .bodyToMono(Map::class.java)
+                    .map { resp ->
+                        mapOf(
+                            "success" to (resp["vnp_ResponseCode"] == "00"),
+                            "resp" to resp
+                        )
+                    }
+            }
+        } ?: Mono.error(
+            IllegalStateException(
+                "Missing parameter " +
+                    "'provider.payment.vn-pay.hash-secret' " +
+                    "or 'provider.payment.vn-pay.tmn-code' " +
+                    "for VNPay configuration"
             )
-            val query = refundBody.entries.sortedBy { it.key }
-                .joinToString("&") { "${it.key}=${it.value}" }
-            val secureHash = hmacSHA512(props.secretKey, query)
-            val finalBody = refundBody + ("vnp_SecureHash" to secureHash)
-            webClient.post()
-                .uri("${props.baseUrl}/merchant_webapi/api/transaction")
-                .bodyValue(finalBody)
-                .retrieve()
-                .bodyToMono(Map::class.java)
-                .map { resp -> mapOf("success" to (resp["vnp_ResponseCode"] == "00"), "resp" to resp) }
-        }
+        )
+
 
     override fun void(headers: Any, body: Any) = refund(headers, body)
 
