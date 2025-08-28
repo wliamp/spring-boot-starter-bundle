@@ -3,7 +3,7 @@ package io.github.wliamp.pro.pay.config
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "provider.payment")
-data class PaymentProviderProps(
+internal data class PaymentProviderProps(
     var vnPay: VnPayProps = VnPayProps(),
     var authorizeNet: AuthorizeNetProps = AuthorizeNetProps()
 ) {

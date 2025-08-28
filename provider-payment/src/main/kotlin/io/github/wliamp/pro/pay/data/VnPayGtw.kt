@@ -11,7 +11,7 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.*
 
-class VnPayGtw(
+internal class VnPayGtw internal constructor(
     private val props: PaymentProviderProps,
     private val webClient: WebClient
 ) : IGtw {
