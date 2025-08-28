@@ -13,11 +13,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
-@EnableConfigurationProperties(VerifyProviderProperties::class)
+@EnableConfigurationProperties(VerifyProviderProps::class)
 internal class VerifyProviderAutoConfig private constructor(
-    private val facebookProps: VerifyProviderProperties.FacebookProps,
-    private val googleProps: VerifyProviderProperties.GoogleProps,
-    private val zaloProps: VerifyProviderProperties.ZaloProps
+    private val facebookProps: VerifyProviderProps.FacebookProps,
+    private val googleProps: VerifyProviderProps.GoogleProps,
+    private val zaloProps: VerifyProviderProps.ZaloProps
 ) {
     @Bean
     @ConditionalOnProperty(

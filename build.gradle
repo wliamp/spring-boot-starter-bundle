@@ -81,13 +81,8 @@ subprojects {
     }
 
     signing {
-        if (!version.endsWith("SNAPSHOT") &&
-            gradle.taskGraph.allTasks.any {
-                it.name.startsWith("publish") && it.name != "publishToMavenLocal"
-            }) {
-            useGpgCmd()
-            sign publishing.publications.mavenJava
-        }
+        useGpgCmd()
+        sign publishing.publications.mavenJava
     }
 }
 
