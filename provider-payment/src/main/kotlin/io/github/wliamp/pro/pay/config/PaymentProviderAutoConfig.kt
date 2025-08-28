@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
 @EnableConfigurationProperties(PaymentProviderProps::class)
-class PaymentProviderAutoConfig(
+internal class PaymentProviderAutoConfig private constructor(
     private val props: PaymentProviderProps,
 ) {
     @Bean

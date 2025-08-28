@@ -4,7 +4,7 @@ import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-class AuthorizeNetGtw(
+internal class AuthorizeNetGtw internal constructor(
     private val props: PaymentProviderProps,
     private val webClient: WebClient
 ) : IGtw {
