@@ -1,10 +1,10 @@
-package io.github.wliamp.provider.config
+package io.github.wliamp.pro.vrf.config
 
-import io.github.wliamp.provider.data.FacebookOauth
-import io.github.wliamp.provider.data.GoogleOauth
-import io.github.wliamp.provider.data.Oauth
-import io.github.wliamp.provider.data.ZaloOauth
-import io.github.wliamp.provider.util.OauthVerifier
+import io.github.wliamp.pro.vrf.data.FacebookOauth
+import io.github.wliamp.pro.vrf.data.GoogleOauth
+import io.github.wliamp.pro.vrf.data.IOauth
+import io.github.wliamp.pro.vrf.data.ZaloOauth
+import io.github.wliamp.pro.vrf.util.OauthProvider
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -13,27 +13,27 @@ import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
-@EnableConfigurationProperties(ProviderProperties::class)
-class ProviderAutoConfig(
-    private val props: ProviderProperties,
+@EnableConfigurationProperties(VerifyProviderProperties::class)
+class VerifyProviderAutoConfig(
+    private val props: VerifyProviderProperties,
 ) {
     @Bean
     @ConditionalOnProperty(prefix = "oauth.facebook", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun fb(): Oauth = FacebookOauth(props, WebClient.builder().build())
+    fun fb(): IOauth = FacebookOauth(props, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(prefix = "oauth.google", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun gg(): Oauth = GoogleOauth(props, WebClient.builder().build())
+    fun gg(): IOauth = GoogleOauth(props, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(prefix = "oauth.zalo", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun zl(): Oauth = ZaloOauth(props, WebClient.builder().build())
+    fun zl(): IOauth = ZaloOauth(props, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
-    fun external(
-        fb: Oauth,
-        gg: Oauth,
-        zl: Oauth
-    ): OauthVerifier = OauthVerifier(fb, gg, zl)
+    fun vrf(
+        fb: IOauth,
+        gg: IOauth,
+        zl: IOauth
+    ): OauthProvider = OauthProvider(fb, gg, zl)
 }

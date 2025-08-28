@@ -1,16 +1,16 @@
-package io.github.wliamp.provider.data
+package io.github.wliamp.pro.vrf.data
 
-import io.github.wliamp.provider.config.ProviderProperties
+import io.github.wliamp.pro.vrf.config.VerifyProviderProperties
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 class ZaloOauth(
-    private val props: ProviderProperties,
+    private val props: VerifyProviderProperties,
     private val webClient: WebClient
-) : Oauth {
-    private val party = "zalo"
+) : IOauth {
+    private val provider = "zalo"
 
     override fun verify(token: String): Mono<Boolean> =
         if (props.zaloTokenInfoUrl.isBlank() || props.zaloAppId.isBlank()) {

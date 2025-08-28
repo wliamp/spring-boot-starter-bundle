@@ -1,9 +1,9 @@
-package  io.github.wliamp.provider.config
+package io.github.wliamp.pro.vrf.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "token")
-data class ProviderProperties(
+data class VerifyProviderProperties(
     var googleClientId: String = "",
     var googleTokenInfoUrl: String = "",
     var facebookAppId: String = "",
