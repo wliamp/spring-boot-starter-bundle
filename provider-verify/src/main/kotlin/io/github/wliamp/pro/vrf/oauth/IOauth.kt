@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.vrf.data
+package io.github.wliamp.pro.vrf.oauth
 
 import reactor.core.publisher.Mono
 

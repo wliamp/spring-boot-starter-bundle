@@ -1,13 +1,13 @@
-package io.github.wliamp.pro.vrf.data
+package io.github.wliamp.pro.vrf.oauth
 
-import io.github.wliamp.pro.vrf.config.OauthProviderProperties
+import io.github.wliamp.pro.vrf.config.VerifyProviderProperties
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 internal class FacebookOauth internal constructor(
-    private val props: OauthProviderProperties.FacebookProps,
+    private val props: VerifyProviderProperties.FacebookProps,
     private val webClient: WebClient
 ) : IOauth {
     private val provider = "facebook"

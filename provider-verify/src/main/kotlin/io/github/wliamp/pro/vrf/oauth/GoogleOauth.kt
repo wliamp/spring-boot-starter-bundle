@@ -1,13 +1,13 @@
-package io.github.wliamp.pro.vrf.data
+package io.github.wliamp.pro.vrf.oauth
 
-import io.github.wliamp.pro.vrf.config.OauthProviderProperties
+import io.github.wliamp.pro.vrf.config.VerifyProviderProperties
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 internal class GoogleOauth internal constructor(
-    private val props: OauthProviderProperties.GoogleProps,
+    private val props: VerifyProviderProperties.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {
     private val provider = "google"

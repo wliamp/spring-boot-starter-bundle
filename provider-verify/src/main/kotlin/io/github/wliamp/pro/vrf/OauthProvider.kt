@@ -1,6 +1,5 @@
-package io.github.wliamp.pro.vrf.util
+package io.github.wliamp.pro.vrf
 
-import io.github.wliamp.pro.vrf.data.IOauth
 import org.springframework.stereotype.Component
 
 @Component
@@ -9,5 +8,3 @@ class OauthProvider(
     val google: IOauth,
     val zalo: IOauth
 )
-
-

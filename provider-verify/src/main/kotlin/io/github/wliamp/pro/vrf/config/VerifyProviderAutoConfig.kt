@@ -1,10 +1,10 @@
 package io.github.wliamp.pro.vrf.config
 
-import io.github.wliamp.pro.vrf.data.FacebookOauth
-import io.github.wliamp.pro.vrf.data.GoogleOauth
-import io.github.wliamp.pro.vrf.data.IOauth
-import io.github.wliamp.pro.vrf.data.ZaloOauth
-import io.github.wliamp.pro.vrf.util.OauthProvider
+import io.github.wliamp.pro.vrf.OauthProvider
+import io.github.wliamp.pro.vrf.oauth.FacebookOauth
+import io.github.wliamp.pro.vrf.oauth.GoogleOauth
+import io.github.wliamp.pro.vrf.oauth.IOauth
+import io.github.wliamp.pro.vrf.oauth.ZaloOauth
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -13,11 +13,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
-@EnableConfigurationProperties(OauthProviderProperties::class)
-internal class OauthProviderAutoConfig private constructor(
-    private val facebookProps: OauthProviderProperties.FacebookProps,
-    private val googleProps: OauthProviderProperties.GoogleProps,
-    private val zaloProps: OauthProviderProperties.ZaloProps
+@EnableConfigurationProperties(VerifyProviderProperties::class)
+internal class VerifyProviderAutoConfig private constructor(
+    private val facebookProps: VerifyProviderProperties.FacebookProps,
+    private val googleProps: VerifyProviderProperties.GoogleProps,
+    private val zaloProps: VerifyProviderProperties.ZaloProps
 ) {
     @Bean
     @ConditionalOnProperty(
