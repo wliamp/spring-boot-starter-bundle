@@ -21,7 +21,7 @@ internal class VerifyProviderAutoConfig private constructor(
 ) {
     @Bean
     @ConditionalOnProperty(
-        prefix = "oauth.facebook",
+        prefix = "provider.oauth.facebook",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
@@ -30,7 +30,7 @@ internal class VerifyProviderAutoConfig private constructor(
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "oauth.google",
+        prefix = "provider.oauth.google",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
@@ -39,7 +39,7 @@ internal class VerifyProviderAutoConfig private constructor(
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "oauth.zalo",
+        prefix = "provider.oauth.zalo",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true

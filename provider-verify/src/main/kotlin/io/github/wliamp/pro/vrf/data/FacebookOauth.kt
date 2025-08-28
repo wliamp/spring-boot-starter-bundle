@@ -32,8 +32,8 @@ internal class FacebookOauth internal constructor(
         } ?: Mono.error(
             IllegalStateException(
                 "Missing parameter " +
-                    "'verify.facebook.app-id' " +
-                    "or 'verify.facebook.access-token' " +
+                    "'provider.oauth.facebook.app-id' " +
+                    "or 'provider.oauth.facebook.access-token' " +
                     "for Facebook configuration"
             )
         )

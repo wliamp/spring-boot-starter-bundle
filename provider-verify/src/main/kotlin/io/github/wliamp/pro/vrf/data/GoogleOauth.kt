@@ -30,7 +30,7 @@ internal class GoogleOauth internal constructor(
             } ?: Mono.error(
             IllegalStateException(
                 "Missing parameter " +
-                    "'verify.google.client-id' " +
+                    "'provider.oauth.google.client-id' " +
                     "for Google configuration"
             )
         )
