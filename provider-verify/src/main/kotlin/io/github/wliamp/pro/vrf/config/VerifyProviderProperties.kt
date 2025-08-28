@@ -16,8 +16,8 @@ data class VerifyProviderProperties(
     )
 
     data class GoogleProps(
-        var clientId: String = "",
-        var tokenInfoUrl: String = ""
+        var baseUrl: String = "https://oauth2.googleapis.com/tokeninfo",
+        var clientId: String = ""
     )
 
     data class ZaloProps(

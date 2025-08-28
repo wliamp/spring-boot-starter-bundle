@@ -13,34 +13,34 @@ class GoogleOauth(
     private val provider = "google"
 
     override fun verify(token: String): Mono<Boolean> =
-        props.takeIf {
-            it.clientId.isNotBlank() &&
-                it.tokenInfoUrl.isNotBlank()
-        }?.let {
-            webClient.get()
-                .uri("${props.tokenInfoUrl}?id_token=$token")
-                .retrieve()
-                .onStatus({ it.isError }) { response ->
-                    Mono.error(IllegalStateException("Google verify failed: ${response.statusCode()}"))
-                }
-                .bodyToMono(Map::class.java)
-                .map { response ->
-                    val aud = response["aud"]?.toString()
-                    aud == props.clientId
-                }
-                .onErrorReturn(false)
-        } ?: Mono.error(IllegalStateException("Google configuration missing"))
-
-    override fun getInfo(token: String): Mono<Map<String, Any>> =
-        props.tokenInfoUrl
-            .takeIf { it.isNotBlank() }
+        props.takeIf { it.clientId.isNotBlank() }
             ?.let {
                 webClient.get()
-                    .uri("$it?id_token=$token")
+                    .uri("${it.baseUrl}?id_token=$token")
                     .retrieve()
                     .onStatus({ it.isError }) { response ->
-                        Mono.error(IllegalStateException("Google get information failed: ${response.statusCode()}"))
+                        Mono.error(IllegalStateException("Google verify failed: ${response.statusCode()}"))
                     }
-                    .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-            } ?: Mono.error(IllegalStateException("Google configuration missing"))
+                    .bodyToMono(Map::class.java)
+                    .map { response ->
+                        val aud = response["aud"]?.toString()
+                        aud == it.clientId
+                    }
+                    .onErrorReturn(false)
+            } ?: Mono.error(
+            IllegalStateException(
+                "Missing parameter " +
+                    "'verify.google.client-id' " +
+                    "for Google configuration"
+            )
+        )
+
+    override fun getInfo(token: String): Mono<Map<String, Any>> =
+        webClient.get()
+            .uri("${props.baseUrl}?id_token=$token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                Mono.error(IllegalStateException("Google get information failed: ${response.statusCode()}"))
+            }
+            .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
 }
