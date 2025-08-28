@@ -1,10 +1,10 @@
 package io.github.wliamp.pro.vrf.config
 
-import io.github.wliamp.pro.vrf.data.FacebookOauth
-import io.github.wliamp.pro.vrf.data.GoogleOauth
-import io.github.wliamp.pro.vrf.data.IOauth
-import io.github.wliamp.pro.vrf.data.ZaloOauth
-import io.github.wliamp.pro.vrf.util.OauthProvider
+import io.github.wliamp.pro.vrf.OauthProvider
+import io.github.wliamp.pro.vrf.oauth.FacebookOauth
+import io.github.wliamp.pro.vrf.oauth.GoogleOauth
+import io.github.wliamp.pro.vrf.oauth.IOauth
+import io.github.wliamp.pro.vrf.oauth.ZaloOauth
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -21,7 +21,7 @@ internal class VerifyProviderAutoConfig private constructor(
 ) {
     @Bean
     @ConditionalOnProperty(
-        prefix = "oauth.facebook",
+        prefix = "provider.oauth.facebook",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
@@ -30,7 +30,7 @@ internal class VerifyProviderAutoConfig private constructor(
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "oauth.google",
+        prefix = "provider.oauth.google",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
@@ -39,7 +39,7 @@ internal class VerifyProviderAutoConfig private constructor(
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "oauth.zalo",
+        prefix = "provider.oauth.zalo",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true

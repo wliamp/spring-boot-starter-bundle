@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.vrf.data
+package io.github.wliamp.pro.vrf.oauth
 
 import io.github.wliamp.pro.vrf.config.VerifyProviderProperties
 import org.springframework.core.ParameterizedTypeReference

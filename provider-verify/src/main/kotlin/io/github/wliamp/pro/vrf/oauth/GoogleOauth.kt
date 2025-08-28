@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.vrf.data
+package io.github.wliamp.pro.vrf.oauth
 
 import io.github.wliamp.pro.vrf.config.VerifyProviderProperties
 import org.springframework.core.ParameterizedTypeReference
@@ -30,7 +30,7 @@ internal class GoogleOauth internal constructor(
             } ?: Mono.error(
             IllegalStateException(
                 "Missing parameter " +
-                    "'verify.google.client-id' " +
+                    "'provider.oauth.google.client-id' " +
                     "for Google configuration"
             )
         )
