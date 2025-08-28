@@ -1,9 +1,9 @@
 package io.github.wliamp.pro.pay.config
 
-import io.github.wliamp.pro.pay.data.AuthorizeNetGtw
-import io.github.wliamp.pro.pay.data.IGtw
-import io.github.wliamp.pro.pay.data.VnPayGtw
-import io.github.wliamp.pro.pay.util.PaymentProvider
+import io.github.wliamp.pro.pay.PaymentProvider
+import io.github.wliamp.pro.pay.gtw.AuthorizeNetGtw
+import io.github.wliamp.pro.pay.gtw.IGtw
+import io.github.wliamp.pro.pay.gtw.VnPayGtw
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

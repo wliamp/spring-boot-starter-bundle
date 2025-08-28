@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay.data
+package io.github.wliamp.pro.pay.gtw
 
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import org.springframework.web.reactive.function.client.WebClient
@@ -111,7 +111,6 @@ internal class VnPayGtw internal constructor(
                     "for VNPay configuration"
             )
         )
-
 
     override fun void(headers: Any, body: Any) = refund(headers, body)
 
