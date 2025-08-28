@@ -21,8 +21,7 @@ data class VerifyProviderProperties(
     )
 
     data class ZaloProps(
-        var appId: String = "",
-        var tokenInfoUrl: String = "",
-        var infoFields: String = ""
+        var baseUrl: String = "https://graph.zalo.me/v2.0/me",
+        var fields: String = ""
     )
 }

@@ -13,32 +13,27 @@ class ZaloOauth(
     private val provider = "zalo"
 
     override fun verify(token: String): Mono<Boolean> =
-        props.takeIf {
-            it.tokenInfoUrl.isNotBlank()
-                && it.appId.isNotBlank()
-        }?.let {
-            webClient.get()
-                .uri("${props.tokenInfoUrl}?access_token=$token")
-                .retrieve()
-                .onStatus({ it.isError }) { response ->
-                    Mono.error(IllegalStateException("Zalo verify failed: ${response.statusCode()}"))
-                }
-                .bodyToMono(Map::class.java)
-                .map { response -> response["id"] != null }
-                .onErrorReturn(false)
-        } ?: Mono.error(IllegalStateException("Zalo configuration missing"))
+        webClient.get()
+            .uri("${props.baseUrl}?access_token=$token")
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                Mono.error(IllegalStateException("Zalo verify failed: ${response.statusCode()}"))
+            }
+            .bodyToMono(Map::class.java)
+            .map { response -> response["id"] != null }
+            .onErrorReturn(false)
+
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        props.takeIf {
-            it.tokenInfoUrl.isNotBlank() &&
-                it.appId.isNotBlank()
-        }?.let {
-            webClient.get()
-                .uri("${props.tokenInfoUrl}?access_token=$token&fields=${props.infoFields}")
-                .retrieve()
-                .onStatus({ it.isError }) { response ->
-                    Mono.error(IllegalStateException("Zalo get information failed: ${response.statusCode()}"))
-                }
-                .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-        } ?: Mono.error(IllegalStateException("Zalo configuration missing"))
+        webClient.get()
+            .uri(props.fields.takeIf { it.isNotBlank() }
+                ?.let { "${props.baseUrl}?access_token=$token&fields=${props.fields}" }
+                ?: "${props.baseUrl}?access_token=$token"
+            )
+            .retrieve()
+            .onStatus({ it.isError }) { response ->
+                Mono.error(IllegalStateException("Zalo get information failed: ${response.statusCode()}"))
+            }
+            .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
+
 }

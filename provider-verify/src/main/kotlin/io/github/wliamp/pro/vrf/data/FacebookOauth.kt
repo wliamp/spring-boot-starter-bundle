@@ -42,7 +42,8 @@ class FacebookOauth(
         webClient.get()
             .uri(props.fields.takeIf { it.isNotBlank() }
                 ?.let { "${props.baseUrl}/me?access_token=$token&fields=${props.fields}" }
-                ?: "${props.baseUrl}/me?access_token=$token")
+                ?: "${props.baseUrl}/me?access_token=$token"
+            )
             .retrieve()
             .onStatus({ status -> status.isError }) { response ->
                 Mono.error(IllegalStateException("Facebook get information failed: ${response.statusCode()}"))
