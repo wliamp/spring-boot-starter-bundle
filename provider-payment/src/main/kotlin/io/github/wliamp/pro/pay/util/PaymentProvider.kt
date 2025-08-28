@@ -5,7 +5,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class PaymentProvider(
-    val vnpay: IGtw
+    val vnPay: IGtw,
+    val authorizeNet: IGtw
 )
 
 
