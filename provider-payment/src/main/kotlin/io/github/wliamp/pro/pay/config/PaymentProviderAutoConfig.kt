@@ -19,7 +19,7 @@ internal class PaymentProviderAutoConfig private constructor(
 ) {
     @Bean
     @ConditionalOnProperty(
-        prefix = "payment.authorize-net",
+        prefix = "provider.payment.authorize-net",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true
@@ -28,7 +28,7 @@ internal class PaymentProviderAutoConfig private constructor(
 
     @Bean
     @ConditionalOnProperty(
-        prefix = "payment.vn-pay",
+        prefix = "provider.payment.vn-pay",
         name = ["enabled"],
         havingValue = "true",
         matchIfMissing = true

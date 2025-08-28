@@ -18,8 +18,8 @@ internal data class PaymentProviderProps(
         var version: String = "2.1.0",
         var currency: String = "VND",
         var locale: String = "vn",
+        var hashSecret: String = "",
         var returnUrl: String = "",
-        var tmnCode: String = "",
-        var hashSecret: String = ""
+        var tmnCode: String = ""
     )
 }

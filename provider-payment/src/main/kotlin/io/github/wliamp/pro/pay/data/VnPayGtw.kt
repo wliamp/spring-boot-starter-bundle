@@ -28,8 +28,8 @@ internal class VnPayGtw internal constructor(
     override fun sale(headers: Any, body: Any): Mono<Any> =
         props.takeIf {
             it.hashSecret.isNotBlank() &&
-                it.tmnCode.isNotBlank() &&
-                it.returnUrl.isNotBlank()
+                it.returnUrl.isNotBlank() &&
+                it.tmnCode.isNotBlank()
         }?.let { p ->
             @Suppress("UNCHECKED_CAST")
             (body as Map<String, String>).let { m ->
@@ -92,6 +92,9 @@ internal class VnPayGtw internal constructor(
                     .uri("${p.baseUrl}/merchant_webapi/api/transaction")
                     .bodyValue(finalBody)
                     .retrieve()
+                    .onStatus({ status -> status.isError }) { response ->
+                        Mono.error(IllegalStateException("VNPay payment failed: ${response.statusCode()}"))
+                    }
                     .bodyToMono(Map::class.java)
                     .map { resp ->
                         mapOf(
