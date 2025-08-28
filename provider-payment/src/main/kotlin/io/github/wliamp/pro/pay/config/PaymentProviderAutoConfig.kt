@@ -14,20 +14,31 @@ import org.springframework.web.reactive.function.client.WebClient
 @AutoConfiguration
 @EnableConfigurationProperties(PaymentProviderProps::class)
 internal class PaymentProviderAutoConfig private constructor(
-    private val props: PaymentProviderProps,
+    private val authorizeNetProps: PaymentProviderProps.AuthorizeNetProps,
+    private val vnPayProps: PaymentProviderProps.VnPayProps
 ) {
     @Bean
-    @ConditionalOnProperty(prefix = "payment.vn-pay", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun vp(): IGtw = VnPayGtw(props, WebClient.builder().build())
+    @ConditionalOnProperty(
+        prefix = "payment.authorize-net",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun an(): IGtw = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
 
     @Bean
-    @ConditionalOnProperty(prefix = "payment.authorize-net", name = ["enabled"], havingValue = "true", matchIfMissing = true)
-    fun an(): IGtw = AuthorizeNetGtw(props, WebClient.builder().build())
+    @ConditionalOnProperty(
+        prefix = "payment.vn-pay",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun vp(): IGtw = VnPayGtw(vnPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun pay(
-        vp: IGtw,
-        an: IGtw
-    ): PaymentProvider = PaymentProvider(vp, an)
+        an: IGtw,
+        vp: IGtw
+    ): PaymentProvider = PaymentProvider(an, vp)
 }

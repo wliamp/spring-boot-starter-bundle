@@ -12,7 +12,7 @@ import javax.crypto.spec.SecretKeySpec
 import java.util.*
 
 internal class VnPayGtw internal constructor(
-    private val props: PaymentProviderProps,
+    private val props: PaymentProviderProps.VnPayProps,
     private val webClient: WebClient
 ) : IGtw {
     private val provider = "vnPay"
@@ -29,25 +29,25 @@ internal class VnPayGtw internal constructor(
         @Suppress("UNCHECKED_CAST")
         (body as Map<String, String>).let { p ->
             val query = mapOf(
-                "vnp_Version" to props.vnPay.version,
+                "vnp_Version" to props.version,
                 "vnp_Command" to "pay",
-                "vnp_TmnCode" to props.vnPay.tmnCode,
+                "vnp_TmnCode" to props.tmnCode,
                 "vnp_Amount" to (p["amount"]!!.toInt() * 100).toString(),
                 "vnp_CurrCode" to "VND",
                 "vnp_TxnRef" to p["orderId"]!!,
                 "vnp_OrderInfo" to p["description"]!!,
                 "vnp_OrderType" to (p["orderType"] ?: "other"),
                 "vnp_Locale" to (p["locale"] ?: "vn"),
-                "vnp_ReturnUrl" to props.vnPay.returnUrl,
+                "vnp_ReturnUrl" to props.returnUrl,
                 "vnp_IpAddr" to p["ipAddress"]!!,
                 "vnp_CreateDate" to DateTimeFormatter.ofPattern("yyyyMMddHHmmss").format(LocalDateTime.now())
             )
             val queryStr = query.entries
                 .sortedBy { it.key }
                 .joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, StandardCharsets.UTF_8)}" }
-            val secureHash = hmacSHA512(props.vnPay.secretKey, queryStr)
+            val secureHash = hmacSHA512(props.secretKey, queryStr)
             Mono.just(
-                mapOf("paymentUrl" to "${props.vnPay.baseUrl}?$queryStr&vnp_SecureHash=$secureHash")
+                mapOf("paymentUrl" to "${props.baseUrl}?$queryStr&vnp_SecureHash=$secureHash")
             )
         }
 
@@ -56,9 +56,9 @@ internal class VnPayGtw internal constructor(
         (body as Map<String, String>).let { p ->
             val refundBody = mapOf(
                 "vnp_RequestId" to UUID.randomUUID().toString(),
-                "vnp_Version" to props.vnPay.version,
+                "vnp_Version" to props.version,
                 "vnp_Command" to "refund",
-                "vnp_TmnCode" to props.vnPay.tmnCode,
+                "vnp_TmnCode" to props.tmnCode,
                 "vnp_TransactionType" to (p["transactionType"] ?: "02"),
                 "vnp_TxnRef" to p["orderId"]!!,
                 "vnp_Amount" to (p["amount"]!!.toInt() * 100).toString(),
@@ -69,10 +69,10 @@ internal class VnPayGtw internal constructor(
             )
             val query = refundBody.entries.sortedBy { it.key }
                 .joinToString("&") { "${it.key}=${it.value}" }
-            val secureHash = hmacSHA512(props.vnPay.secretKey, query)
+            val secureHash = hmacSHA512(props.secretKey, query)
             val finalBody = refundBody + ("vnp_SecureHash" to secureHash)
             webClient.post()
-                .uri("${props.vnPay.baseUrl}/merchant_webapi/api/transaction")
+                .uri("${props.baseUrl}/merchant_webapi/api/transaction")
                 .bodyValue(finalBody)
                 .retrieve()
                 .bodyToMono(Map::class.java)

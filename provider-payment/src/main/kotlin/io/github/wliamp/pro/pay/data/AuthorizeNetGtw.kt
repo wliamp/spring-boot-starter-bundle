@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 internal class AuthorizeNetGtw internal constructor(
-    private val props: PaymentProviderProps,
+    private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
 ) : IGtw {
     private val provider = "authorizeNet"
@@ -29,7 +29,7 @@ internal class AuthorizeNetGtw internal constructor(
         Mono.defer {
             val requestBody = buildTransactionRequestJson(transactionType, body)
             webClient.post()
-                .uri(props.authorizeNet.url)
+                .uri(props.baseUrl)
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(Map::class.java)
@@ -42,8 +42,8 @@ internal class AuthorizeNetGtw internal constructor(
             mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to mapOf(
-                        "name" to props.authorizeNet.apiLoginId,
-                        "transactionKey" to props.authorizeNet.transactionKey
+                        "name" to props.apiLoginId,
+                        "transactionKey" to props.transactionKey
                     ),
                     "transactionRequest" to mapOf(
                         "transactionType" to transactionType,
