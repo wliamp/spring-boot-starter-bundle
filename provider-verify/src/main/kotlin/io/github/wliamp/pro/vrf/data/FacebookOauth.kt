@@ -7,19 +7,19 @@ import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 class FacebookOauth(
-    private val props: VerifyProviderProperties,
+    private val props: VerifyProviderProperties.FacebookProps,
     private val webClient: WebClient
 ) : IOauth {
     private val provider = "facebook"
 
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf {
-            it.facebookAppId.isNotBlank() &&
-                it.facebookTokenInfoUrl.isNotBlank() &&
-                it.facebookAppAccessToken.isNotBlank()
+            it.appId.isNotBlank() &&
+                it.tokenInfoUrl.isNotBlank() &&
+                it.appAccessToken.isNotBlank()
         }?.let {
             webClient.get()
-                .uri("${it.facebookTokenInfoUrl}?input_token=$token&access_token=${it.facebookAppAccessToken}")
+                .uri("${it.tokenInfoUrl}?input_token=$token&access_token=${it.appAccessToken}")
                 .retrieve()
                 .onStatus({ status -> status.isError }) { response ->
                     Mono.error(IllegalStateException("Facebook verify failed: ${response.statusCode()}"))
@@ -27,18 +27,17 @@ class FacebookOauth(
                 .bodyToMono(Map::class.java)
                 .map { response ->
                     val data = response["data"] as? Map<*, *>
-                    data?.get("app_id")?.toString() == it.facebookAppId
+                    data?.get("app_id")?.toString() == it.appId
                 }
                 .onErrorReturn(false)
         } ?: Mono.error(IllegalStateException("Facebook configuration missing"))
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
         props.takeIf {
-            it.facebookTokenInfoUrl.isNotBlank() &&
-                it.facebookAppAccessToken.isNotBlank()
+            it.infoFields.isNotBlank()
         }?.let {
             webClient.get()
-                .uri("https://graph.facebook.com/me?access_token=$token&fields=${it.facebookInfoFields}")
+                .uri("https://graph.facebook.com/me?access_token=$token&fields=${it.infoFields}")
                 .retrieve()
                 .onStatus({ status -> status.isError }) { response ->
                     Mono.error(IllegalStateException("Facebook get information failed: ${response.statusCode()}"))

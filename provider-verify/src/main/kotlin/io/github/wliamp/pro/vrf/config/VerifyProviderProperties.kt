@@ -4,13 +4,25 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "token")
 data class VerifyProviderProperties(
-    var googleClientId: String = "",
-    var googleTokenInfoUrl: String = "",
-    var facebookAppId: String = "",
-    var facebookTokenInfoUrl: String = "",
-    var facebookAppAccessToken: String = "",
-    var facebookInfoFields: String = "",
-    var zaloAppId: String = "",
-    var zaloTokenInfoUrl: String = "",
-    var zaloInfoFields: String = ""
-)
+    var facebook: FacebookProps = FacebookProps(),
+    var google: GoogleProps = GoogleProps(),
+    var zalo: ZaloProps = ZaloProps()
+) {
+    data class FacebookProps(
+        var appId: String = "",
+        var tokenInfoUrl: String = "",
+        var appAccessToken: String = "",
+        var infoFields: String = ""
+    )
+
+    data class GoogleProps(
+        var clientId: String = "",
+        var tokenInfoUrl: String = ""
+    )
+
+    data class ZaloProps(
+        var appId: String = "",
+        var tokenInfoUrl: String = "",
+        var infoFields: String = ""
+    )
+}

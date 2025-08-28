@@ -7,18 +7,18 @@ import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 class GoogleOauth(
-    private val props: VerifyProviderProperties,
+    private val props: VerifyProviderProperties.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {
     private val provider = "google"
 
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf {
-            it.googleClientId.isNotBlank() &&
-                it.googleTokenInfoUrl.isNotBlank()
+            it.clientId.isNotBlank() &&
+                it.tokenInfoUrl.isNotBlank()
         }?.let {
             webClient.get()
-                .uri("${props.googleTokenInfoUrl}?id_token=$token")
+                .uri("${props.tokenInfoUrl}?id_token=$token")
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
                     Mono.error(IllegalStateException("Google verify failed: ${response.statusCode()}"))
@@ -26,13 +26,13 @@ class GoogleOauth(
                 .bodyToMono(Map::class.java)
                 .map { response ->
                     val aud = response["aud"]?.toString()
-                    aud == props.googleClientId
+                    aud == props.clientId
                 }
                 .onErrorReturn(false)
         } ?: Mono.error(IllegalStateException("Google configuration missing"))
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        props.googleTokenInfoUrl
+        props.tokenInfoUrl
             .takeIf { it.isNotBlank() }
             ?.let {
                 webClient.get()

@@ -7,18 +7,18 @@ import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 class ZaloOauth(
-    private val props: VerifyProviderProperties,
+    private val props: VerifyProviderProperties.ZaloProps,
     private val webClient: WebClient
 ) : IOauth {
     private val provider = "zalo"
 
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf {
-            it.zaloTokenInfoUrl.isNotBlank()
-                && it.zaloAppId.isNotBlank()
+            it.tokenInfoUrl.isNotBlank()
+                && it.appId.isNotBlank()
         }?.let {
             webClient.get()
-                .uri("${props.zaloTokenInfoUrl}?access_token=$token")
+                .uri("${props.tokenInfoUrl}?access_token=$token")
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
                     Mono.error(IllegalStateException("Zalo verify failed: ${response.statusCode()}"))
@@ -30,11 +30,11 @@ class ZaloOauth(
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
         props.takeIf {
-            it.zaloTokenInfoUrl.isNotBlank() &&
-                it.zaloAppId.isNotBlank()
+            it.tokenInfoUrl.isNotBlank() &&
+                it.appId.isNotBlank()
         }?.let {
             webClient.get()
-                .uri("${props.zaloTokenInfoUrl}?access_token=$token&fields=${props.zaloInfoFields}")
+                .uri("${props.tokenInfoUrl}?access_token=$token&fields=${props.infoFields}")
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
                     Mono.error(IllegalStateException("Zalo get information failed: ${response.statusCode()}"))
