@@ -1,89 +1,170 @@
 package io.github.wliamp.pro.pay.gtw
 
+import io.github.wliamp.pro.pay.AuthorizeNetRequest
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 internal class AuthorizeNetGtw internal constructor(
     private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IGtw {
+) : IGtw<AuthorizeNetRequest> {
     private val provider = "authorizeNet"
 
-    override fun authorize(headers: Any, body: Any): Mono<Any> =
-        processTransaction("authOnlyTransaction", body)
+    override fun authorize(request: AuthorizeNetRequest): Mono<Any> =
+        getHostedPaymentToken("authOnlyTransaction", request)
 
-    override fun capture(headers: Any, body: Any): Mono<Any> =
-        processTransaction("priorAuthCaptureTransaction", body)
+    override fun sale(request: AuthorizeNetRequest): Mono<Any> =
+        getHostedPaymentToken("authCaptureTransaction", request)
 
-    override fun sale(headers: Any, body: Any): Mono<Any> =
-        processTransaction("authCaptureTransaction", body)
-
-    override fun refund(headers: Any, body: Any): Mono<Any> =
-        processTransaction("refundTransaction", body)
-
-    override fun void(headers: Any, body: Any): Mono<Any> =
-        processTransaction("voidTransaction", body)
-
-    private fun processTransaction(transactionType: String, body: Any): Mono<Any> =
-        props.takeIf {
-            it.apiLoginId.isNotBlank() &&
-                it.transactionKey.isNotBlank()
-        }?.let {
-            Mono.defer {
-                @Suppress("UNCHECKED_CAST")
-                val p = body as Map<String, Any>
-                val requestBody = mapOf(
-                    "createTransactionRequest" to mapOf(
-                        "merchantAuthentication" to mapOf(
-                            "name" to props.apiLoginId,
-                            "transactionKey" to props.transactionKey
-                        ),
-                        "transactionRequest" to mapOf(
-                            "transactionType" to transactionType,
-                            "amount" to p["amount"]!!,
-                            "payment" to mapOf(
-                                "creditCard" to mapOf(
-                                    "cardNumber" to p["cardNumber"]!!,
-                                    "expirationDate" to p["expirationDate"]!!,
-                                    "cardCode" to p["cardCode"]!!
-                                )
-                            ),
-                            "order" to mapOf(
-                                "invoiceNumber" to p["invoiceNumber"]!!,
-                                "description" to (p["description"] as? String ?: "")
-                            ),
-                            "transactionSettings" to listOf(
-                                mapOf(
-                                    "settingName" to "testRequest",
-                                    "settingValue" to "false"
-                                )
-                            )
-                        )
+    override fun capture(request: AuthorizeNetRequest): Mono<Any> =
+        requireAuthKeys().flatMap {
+            val body = mapOf(
+                "createTransactionRequest" to mapOf(
+                    "merchantAuthentication" to merchantAuth(),
+                    "transactionRequest" to mapOf(
+                        "transactionType" to "priorAuthCaptureTransaction",
+                        "amount" to request.amount,
+                        "refTransId" to request.refTransId
                     )
                 )
-                webClient.post()
-                    .uri(props.baseUrl)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .onStatus({ status -> status.isError }) { response ->
-                        Mono.error(IllegalStateException("AuthorizeNet payment failed: ${response.statusCode()}"))
-                    }
-                    .bodyToMono(Map::class.java)
-                    .map { resp ->
-                        mapOf(
-                            "success" to (resp["transactionResponse"] != null),
-                            "resp" to resp
-                        )
-                    }
+            )
+            callJsonApi(body).map(::mapTxnResponse)
+        }
+
+    override fun refund(request: AuthorizeNetRequest): Mono<Any> =
+        requireAuthKeys().flatMap {
+            val body = mapOf(
+                "createTransactionRequest" to mapOf(
+                    "merchantAuthentication" to merchantAuth(),
+                    "transactionRequest" to mapOf(
+                        "transactionType" to "refundTransaction",
+                        "amount" to request.amount,
+                        "refTransId" to request.refTransId
+                    )
+                )
+            )
+            callJsonApi(body).map(::mapTxnResponse)
+        }
+
+    override fun void(request: AuthorizeNetRequest): Mono<Any> =
+        requireAuthKeys().flatMap {
+            val body = mapOf(
+                "createTransactionRequest" to mapOf(
+                    "merchantAuthentication" to merchantAuth(),
+                    "transactionRequest" to mapOf(
+                        "transactionType" to "voidTransaction",
+                        "refTransId" to request.refTransId
+                    )
+                )
+            )
+            callJsonApi(body).map(::mapTxnResponse)
+        }
+
+    private fun getHostedPaymentToken(
+        transactionType: String,
+        request: AuthorizeNetRequest
+    ): Mono<Any> =
+        requireAuthKeys().flatMap {
+            val txnReq = mutableMapOf<String, Any>(
+                "transactionType" to transactionType,
+                "amount" to request.amount
+            ).apply {
+                if (request.orderId.isNotBlank() || !request.description.isNullOrBlank()) {
+                    this["order"] = mapOf(
+                        "orderId" to request.orderId,
+                        "description" to (request.description ?: ("Create Payment for orderId="+request.orderId))
+                    )
+                }
             }
-        } ?: Mono.error(
-            IllegalStateException(
-                "Missing parameter " +
-                    "'provider.payment.authorize-net.api-login-id' " +
-                    "or 'provider.payment.authorize-net.transaction-key' " +
-                    "for VNPay configuration"
+            val body = mapOf(
+                "getHostedPaymentPageRequest" to mapOf(
+                    "merchantAuthentication" to merchantAuth(),
+                    "transactionRequest" to txnReq,
+                    "hostedPaymentSettings" to buildHostedPaymentSettings()
+                )
+            )
+            callJsonApi(body).map { resp ->
+                val token = resp["token"] as? String
+                    ?: error("Authorize.Net Hosted Payment token is missing")
+                mapOf(
+                    "success" to true,
+                    "provider" to provider,
+                    "redirectUrl" to props.returnUrl,
+                    "token" to token
+                )
+            }
+        }
+
+    private fun buildHostedPaymentSettings(): Map<String, Any> = mapOf(
+        "setting" to listOf(
+            mapOf(
+                "settingName" to "hostedPaymentReturnOptions",
+                "settingValue" to """
+              {
+                "showReceipt": true,
+                "url": "${props.returnUrl}",
+                "urlText": "Continue",
+                "cancelUrl": "${props.cancelUrl}",
+                "cancelUrlText": "Cancel"
+              }
+            """.trimIndent()
             )
         )
+    )
+
+    private fun callJsonApi(body: Any): Mono<Map<*, *>> =
+        webClient.post()
+            .uri(props.baseUrl)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .bodyValue(body)
+            .retrieve()
+            .onStatus({ it.isError }) { res ->
+                res.bodyToMono(String::class.java).flatMap { body ->
+                    Mono.error(IllegalStateException("Authorize.Net request failed: HTTP ${res.statusCode()} - $body"))
+                }
+            }
+            .bodyToMono(Map::class.java)
+
+    private fun merchantAuth(): Map<String, String> =
+        mapOf("name" to props.apiLoginId, "transactionKey" to props.transactionKey)
+
+    private fun requireAuthKeys(): Mono<Unit> =
+        props.takeIf {
+            it.apiLoginId.isNotBlank() &&
+                it.transactionKey.isNotBlank() &&
+                it.returnUrl.isNotBlank() &&
+                it.cancelUrl.isNotBlank()
+        }?.let { Mono.just(Unit) }
+            ?: Mono.error(
+                IllegalStateException(
+                    "Missing parameter " +
+                        "'provider.payment.authorize-net.api-login-id' " +
+                        "or 'provider.payment.authorize-net.cancel-url' " +
+                        "or 'provider.payment.authorize-net.return-url' " +
+                        "or 'provider.payment.authorize-net.transaction-key' " +
+                        "for AuthorizeNet configurations"
+                )
+            )
+
+    private fun mapTxnResponse(resp: Map<*, *>) =
+        (resp["transactionResponse"] as? Map<*, *>).let { txn ->
+            val msgs = resp["messages"] as? Map<*, *>
+            val responseCode = txn?.get("responseCode")?.toString()
+            val transId = txn?.get("transId")?.toString()
+            val resultCode = msgs?.get("resultCode")?.toString()
+            val success = responseCode == "1" && resultCode == "Ok" && !transId.isNullOrBlank()
+            mapOf(
+                "success" to success,
+                "provider" to provider,
+                "transactionId" to transId,
+                "authCode" to txn?.get("authCode"),
+                "responseCode" to responseCode,
+                "resultCode" to resultCode,
+                "raw" to resp
+            )
+        }
 }
 
