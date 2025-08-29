@@ -45,7 +45,7 @@ internal class VnPayGtw internal constructor(
                 "vnp_Amount" to (body.amount.toInt() * 100).toString(),
                 "vnp_CurrCode" to p.currency,
                 "vnp_TxnRef" to body.orderId,
-                "vnp_OrderInfo" to (body.description ?: ("Create Payment for TxnRef=" + body.orderId)),
+                "vnp_OrderInfo" to (body.description ?: ("Create Payment for vnp_TxnRef=" + body.orderId)),
                 "vnp_OrderType" to (body.orderType ?: "other"),
                 "vnp_Locale" to p.locale,
                 "vnp_ReturnUrl" to p.returnUrl,

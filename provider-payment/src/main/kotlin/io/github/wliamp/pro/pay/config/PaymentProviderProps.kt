@@ -4,8 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "provider.payment")
 internal data class PaymentProviderProps(
+    var authorizeNet: AuthorizeNetProps = AuthorizeNetProps(),
     var vnPay: VnPayProps = VnPayProps(),
-    var authorizeNet: AuthorizeNetProps = AuthorizeNetProps()
+    var zaloPay: ZaloPayProps = ZaloPayProps()
 ) {
     data class AuthorizeNetProps(
         var baseUrl: String = "https://api2.authorize.net/xml/v1/request.api",
@@ -24,5 +25,14 @@ internal data class PaymentProviderProps(
         var hashSecret: String = "",
         var returnUrl: String = "",
         var tmnCode: String = ""
+    )
+
+    data class ZaloPayProps(
+        val baseUrl: String = "https://api.zalopay.vn",
+        val locale: String = "vi",
+        val appId: String = "",
+        val macKey: String = "",
+        val returnUrl: String = "",
+        val cancelUrl: String = ""
     )
 }

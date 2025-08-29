@@ -75,7 +75,7 @@ internal class AuthorizeNetGtw internal constructor(
                 if (body.orderId.isNotBlank() || !body.description.isNullOrBlank()) {
                     this["order"] = mapOf(
                         "orderId" to body.orderId,
-                        "description" to (body.description ?: "")
+                        "description" to (body.description ?: ("Create Payment for orderId="+body.orderId))
                     )
                 }
             }
