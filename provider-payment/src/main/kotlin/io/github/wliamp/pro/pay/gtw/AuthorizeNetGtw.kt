@@ -1,6 +1,6 @@
 package io.github.wliamp.pro.pay.gtw
 
-import io.github.wliamp.pro.pay.PaymentRequest
+import io.github.wliamp.pro.pay.AuthorizeNetRequest
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -10,83 +10,83 @@ import reactor.core.publisher.Mono
 internal class AuthorizeNetGtw internal constructor(
     private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IGtw {
+) : IGtw<AuthorizeNetRequest> {
     private val provider = "authorizeNet"
 
-    override fun authorize(body: PaymentRequest): Mono<Any> =
-        getHostedPaymentToken("authOnlyTransaction", body)
+    override fun authorize(request: AuthorizeNetRequest): Mono<Any> =
+        getHostedPaymentToken("authOnlyTransaction", request)
 
-    override fun sale(body: PaymentRequest): Mono<Any> =
-        getHostedPaymentToken("authCaptureTransaction", body)
+    override fun sale(request: AuthorizeNetRequest): Mono<Any> =
+        getHostedPaymentToken("authCaptureTransaction", request)
 
-    override fun capture(body: PaymentRequest): Mono<Any> =
+    override fun capture(request: AuthorizeNetRequest): Mono<Any> =
         requireAuthKeys().flatMap {
-            val requestBody = mapOf(
+            val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "priorAuthCaptureTransaction",
-                        "amount" to body.amount,
-                        "refTransId" to body.refTransId
+                        "amount" to request.amount,
+                        "refTransId" to request.refTransId
                     )
                 )
             )
-            callJsonApi(requestBody).map(::mapTxnResponse)
+            callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun refund(body: PaymentRequest): Mono<Any> =
+    override fun refund(request: AuthorizeNetRequest): Mono<Any> =
         requireAuthKeys().flatMap {
-            val requestBody = mapOf(
+            val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "refundTransaction",
-                        "amount" to body.amount,
-                        "refTransId" to body.refTransId
+                        "amount" to request.amount,
+                        "refTransId" to request.refTransId
                     )
                 )
             )
-            callJsonApi(requestBody).map(::mapTxnResponse)
+            callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun void(body: PaymentRequest): Mono<Any> =
+    override fun void(request: AuthorizeNetRequest): Mono<Any> =
         requireAuthKeys().flatMap {
-            val requestBody = mapOf(
+            val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "voidTransaction",
-                        "refTransId" to body.refTransId
+                        "refTransId" to request.refTransId
                     )
                 )
             )
-            callJsonApi(requestBody).map(::mapTxnResponse)
+            callJsonApi(body).map(::mapTxnResponse)
         }
 
     private fun getHostedPaymentToken(
         transactionType: String,
-        body: PaymentRequest
+        request: AuthorizeNetRequest
     ): Mono<Any> =
         requireAuthKeys().flatMap {
             val txnReq = mutableMapOf<String, Any>(
                 "transactionType" to transactionType,
-                "amount" to body.amount
+                "amount" to request.amount
             ).apply {
-                if (body.orderId.isNotBlank() || !body.description.isNullOrBlank()) {
+                if (request.orderId.isNotBlank() || !request.description.isNullOrBlank()) {
                     this["order"] = mapOf(
-                        "orderId" to body.orderId,
-                        "description" to (body.description ?: ("Create Payment for orderId="+body.orderId))
+                        "orderId" to request.orderId,
+                        "description" to (request.description ?: ("Create Payment for orderId="+request.orderId))
                     )
                 }
             }
-            val requestBody = mapOf(
+            val body = mapOf(
                 "getHostedPaymentPageRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to txnReq,
                     "hostedPaymentSettings" to buildHostedPaymentSettings()
                 )
             )
-            callJsonApi(requestBody).map { resp ->
+            callJsonApi(body).map { resp ->
                 val token = resp["token"] as? String
                     ?: error("Authorize.Net Hosted Payment token is missing")
                 mapOf(
@@ -115,11 +115,11 @@ internal class AuthorizeNetGtw internal constructor(
         )
     )
 
-    private fun callJsonApi(requestBody: Any): Mono<Map<*, *>> =
+    private fun callJsonApi(body: Any): Mono<Map<*, *>> =
         webClient.post()
             .uri(props.baseUrl)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .bodyValue(requestBody)
+            .bodyValue(body)
             .retrieve()
             .onStatus({ it.isError }) { res ->
                 res.bodyToMono(String::class.java).flatMap { body ->
