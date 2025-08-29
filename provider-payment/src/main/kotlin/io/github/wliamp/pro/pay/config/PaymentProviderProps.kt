@@ -8,9 +8,12 @@ internal data class PaymentProviderProps(
     var authorizeNet: AuthorizeNetProps = AuthorizeNetProps()
 ) {
     data class AuthorizeNetProps(
-        var baseUrl: String = "https://apitest.authorize.net/rest/v1/transactions",
+        var baseUrl: String = "https://api2.authorize.net/xml/v1/request.api",
+        var redirectUrl: String = "https://accept.authorize.net/payment/payment",
         var apiLoginId: String = "",
         var transactionKey: String = "",
+        var returnUrl: String = "",
+        var cancelUrl: String = "",
     )
 
     data class VnPayProps(
