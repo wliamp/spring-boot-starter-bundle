@@ -4,8 +4,10 @@ import io.github.wliamp.pro.pay.gtw.ORequest
 
 data class VnPayRequest(
     val vnpAmount: String,
+    val vnpBankCode: String?,
     val vnpCreateBy: String?,
     val vnpIpAddr: String,
+    val vnpLocale: String?,
     val vnpOrderInfo: String?,
     val vnpOrderType: String?,
     val vnpTransactionDate: String,
@@ -20,8 +22,10 @@ data class VnPayRequest(
 
     class Builder {
         private var vnpAmount: String = ""
+        private var vnpBankCode: String? = null
         private var vnpCreateBy: String? = null
         private var vnpIpAddr: String = ""
+        private var vnpLocale: String? = null
         private var vnpOrderInfo: String? = null
         private var vnpOrderType: String? = null
         private var vnpTransactionDate: String = ""
@@ -30,8 +34,10 @@ data class VnPayRequest(
         private var vnpTxnRef: String = ""
 
         fun vnpAmount(vnpAmount: String) = apply { this.vnpAmount = vnpAmount }
-        fun vnpCreateBy(vnpCreateBy: String?) = apply { this.vnpCreateBy = vnpCreateBy }
+        fun vnpBankCode(vnpBankCode: String) = apply { this.vnpBankCode = vnpBankCode }
+        fun vnpCreateBy(vnpCreateBy: String) = apply { this.vnpCreateBy = vnpCreateBy }
         fun vnpIpAddr(vnpIpAddr: String) = apply { this.vnpIpAddr = vnpIpAddr }
+        fun vnpLocale(vnpLocale: String) = apply { this.vnpLocale = vnpLocale }
         fun vnpOrderInfo(vnpOrderInfo: String) = apply { this.vnpOrderInfo = vnpOrderInfo }
         fun vnpOrderType(vnpOrderType: String) = apply { this.vnpOrderType = vnpOrderType }
         fun vnpTransactionDate(vnpTransactionDate: String) = apply { this.vnpTransactionDate = vnpTransactionDate }
@@ -41,8 +47,10 @@ data class VnPayRequest(
 
         fun build() = VnPayRequest(
             vnpAmount,
+            vnpBankCode,
             vnpCreateBy,
             vnpIpAddr,
+            vnpLocale,
             vnpOrderInfo,
             vnpOrderType,
             vnpTransactionDate,

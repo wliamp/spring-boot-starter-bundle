@@ -20,8 +20,7 @@ internal data class PaymentProviderProps(
     data class VnPayProps(
         var baseUrl: String = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
         var version: String = "2.1.0",
-        var currency: String = "VND",
-        var locale: String = "vn",
+        var expiredMinutes: Long = 15,
         var hashSecret: String = "",
         var returnUrl: String = "",
         var tmnCode: String = ""
