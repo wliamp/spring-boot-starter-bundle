@@ -1,16 +1,16 @@
-package io.github.wliamp.pro.pay.gtw
+package io.github.wliamp.pro.pay.impl
 
-import io.github.wliamp.pro.pay.AuthorizeNetRequest
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
+import io.github.wliamp.pro.pay.req.AuthorizeNetRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-internal class AuthorizeNetGtw internal constructor(
+internal class AuthorizeNetPayment internal constructor(
     private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IGtw<AuthorizeNetRequest> {
+) : IPayment<AuthorizeNetRequest> {
     private val provider = "authorizeNet"
 
     override fun authorize(request: AuthorizeNetRequest): Mono<Any> =

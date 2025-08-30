@@ -1,7 +1,7 @@
-package io.github.wliamp.pro.pay.gtw
+package io.github.wliamp.pro.pay.impl
 
-import io.github.wliamp.pro.pay.VnPayRequest
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
+import io.github.wliamp.pro.pay.req.VnPayRequest
 import io.github.wliamp.pro.pay.util.putIfNotBlank
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -15,9 +15,9 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.*
 
-internal class VnPayGtw internal constructor(
+internal class VnPayPayment internal constructor(
     private val props: PaymentProviderProps.VnPayProps, private val webClient: WebClient
-) : IGtw<VnPayRequest> {
+) : IPayment<VnPayRequest> {
     private val provider = "vnPay"
 
     @Deprecated(

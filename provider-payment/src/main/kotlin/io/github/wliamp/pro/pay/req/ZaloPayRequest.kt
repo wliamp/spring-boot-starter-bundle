@@ -1,11 +1,18 @@
-package io.github.wliamp.pro.pay
+package io.github.wliamp.pro.pay.req
 
-import io.github.wliamp.pro.pay.gtw.ORequest
+import io.github.wliamp.pro.pay.impl.ORequest
 
 data class ZaloPayRequest(
     val amount: String,
+    val appUser: String?,
     val appTransId: String,
+    val callbackUrl: String?,
     val description: String?,
+    val embedData: String?,
+    val item: String?,
+    val orderCode: String?,
+    val paymentId: String?,
+    val preferredPaymentMethod: String?,
     val zpTransId: String
 ) : ORequest() {
     companion object {

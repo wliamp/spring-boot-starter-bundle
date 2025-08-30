@@ -1,11 +1,11 @@
 package io.github.wliamp.pro.pay
 
-import io.github.wliamp.pro.pay.gtw.IGtw
+import io.github.wliamp.pro.pay.impl.IPayment
 import org.springframework.stereotype.Component
 
 @Component
 class PaymentProvider(
-    val authorizeNet: IGtw<AuthorizeNetRequest>,
-    val vnPay: IGtw<VnPayRequest>,
-    val zaloPay: IGtw<ZaloPayRequest>
+    val authorizeNet: IPayment<AuthorizeNetRequest>,
+    val vnPay: IPayment<VnPayRequest>,
+    val zaloPay: IPayment<ZaloPayRequest>
 )

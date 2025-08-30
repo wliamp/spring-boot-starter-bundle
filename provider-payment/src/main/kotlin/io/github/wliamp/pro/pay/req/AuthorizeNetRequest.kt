@@ -1,6 +1,4 @@
-package io.github.wliamp.pro.pay
-
-import io.github.wliamp.pro.pay.gtw.ORequest
+package io.github.wliamp.pro.pay.req
 
 data class AuthorizeNetRequest(
     val amount: String,
@@ -32,4 +30,3 @@ data class AuthorizeNetRequest(
         )
     }
 }
-
