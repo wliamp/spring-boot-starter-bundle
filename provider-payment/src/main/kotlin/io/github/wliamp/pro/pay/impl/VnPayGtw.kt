@@ -15,9 +15,9 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.*
 
-internal class VnPayPayment internal constructor(
+internal class VnPayGtw internal constructor(
     private val props: PaymentProviderProps.VnPayProps, private val webClient: WebClient
-) : IPayment<VnPayRequest> {
+) : IGtw<VnPayRequest> {
     private val provider = "vnPay"
 
     @Deprecated(

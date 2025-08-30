@@ -7,10 +7,10 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-internal class AuthorizeNetPayment internal constructor(
+internal class AuthorizeNetGtw internal constructor(
     private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IPayment<AuthorizeNetRequest> {
+) : IGtw<AuthorizeNetRequest> {
     private val provider = "authorizeNet"
 
     override fun authorize(request: AuthorizeNetRequest): Mono<Any> =

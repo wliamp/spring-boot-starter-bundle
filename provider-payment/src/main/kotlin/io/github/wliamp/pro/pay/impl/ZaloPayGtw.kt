@@ -10,10 +10,10 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-internal class ZaloPayPayment internal constructor(
+internal class ZaloPayGtw internal constructor(
     private val props: PaymentProviderProps.ZaloPayProps,
     private val webClient: WebClient
-) : IPayment<ZaloPayRequest> {
+) : IGtw<ZaloPayRequest> {
     private val provider = "zaloPay"
 
     @Deprecated(

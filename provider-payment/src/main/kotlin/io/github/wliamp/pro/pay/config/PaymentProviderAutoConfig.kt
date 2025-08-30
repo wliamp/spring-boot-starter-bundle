@@ -1,10 +1,10 @@
 package io.github.wliamp.pro.pay.config
 
 import io.github.wliamp.pro.pay.PaymentProvider
-import io.github.wliamp.pro.pay.impl.AuthorizeNetPayment
-import io.github.wliamp.pro.pay.impl.IPayment
-import io.github.wliamp.pro.pay.impl.VnPayPayment
-import io.github.wliamp.pro.pay.impl.ZaloPayPayment
+import io.github.wliamp.pro.pay.impl.AuthorizeNetGtw
+import io.github.wliamp.pro.pay.impl.IGtw
+import io.github.wliamp.pro.pay.impl.VnPayGtw
+import io.github.wliamp.pro.pay.impl.ZaloPayGtw
 import io.github.wliamp.pro.pay.req.AuthorizeNetRequest
 import io.github.wliamp.pro.pay.req.VnPayRequest
 import io.github.wliamp.pro.pay.req.ZaloPayRequest
@@ -29,7 +29,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun an(): IPayment<AuthorizeNetRequest> = AuthorizeNetPayment(authorizeNetProps, WebClient.builder().build())
+    fun an(): IGtw<AuthorizeNetRequest> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,7 +38,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun vp(): IPayment<VnPayRequest> = VnPayPayment(vnPayProps, WebClient.builder().build())
+    fun vp(): IGtw<VnPayRequest> = VnPayGtw(vnPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -47,14 +47,14 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zp(): IPayment<ZaloPayRequest> = ZaloPayPayment(zaloPayProps, WebClient.builder().build())
+    fun zp(): IGtw<ZaloPayRequest> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun pay(
-        an: IPayment<AuthorizeNetRequest>,
-        vp: IPayment<VnPayRequest>,
-        zp: IPayment<ZaloPayRequest>
+        an: IGtw<AuthorizeNetRequest>,
+        vp: IGtw<VnPayRequest>,
+        zp: IGtw<ZaloPayRequest>
     ): PaymentProvider = PaymentProvider(
         an,
         vp,
