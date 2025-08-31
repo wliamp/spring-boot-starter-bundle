@@ -1,17 +1,12 @@
 package io.github.wliamp.pro.pay.cus
 
 data class ZaloPayCus(
-    val amount: String,
-    val appUser: String?,
-    val appTransId: String,
-    val callbackUrl: String?,
+    val amount: Long,
     val description: String?,
+    val deviceInfo: String?,
     val embedData: String?,
     val item: String?,
-    val orderCode: String?,
-    val paymentId: String?,
-    val preferredPaymentMethod: String?,
-    val zpTransId: String
+    val bankCode: String?
 ) : OCus() {
     companion object {
         @JvmStatic
@@ -19,21 +14,27 @@ data class ZaloPayCus(
     }
 
     class Builder {
-        private var amount: String = ""
-        private var appTransId: String = ""
+        private var amount: Long = 0
         private var description: String? = null
-        private var zpTransId: String = ""
+        private var deviceInfo: String? = null
+        private var embedData: String? = null
+        private var item: String = ""
+        private var bankCode: String? = null
 
-        fun amount(amount: String) = apply { this.amount = amount }
-        fun appTransId(appTransId: String) = apply { this.appTransId = appTransId }
+        fun amount(amount: Long) = apply { this.amount = amount }
         fun description(description: String?) = apply { this.description = description }
-        fun zpTransId(zpTransId: String) = apply { this.zpTransId = zpTransId }
+        fun deviceInfo(deviceInfo: String?) = apply { this.deviceInfo = deviceInfo }
+        fun embedData(embedData: String?) = apply { this.embedData = embedData }
+        fun item(item: String) = apply { this.item = item }
+        fun bankCode(bankCode: String?) = apply { this.bankCode = bankCode }
 
         fun build() = ZaloPayCus(
             amount,
-            appTransId,
             description,
-            zpTransId
+            deviceInfo,
+            embedData,
+            item,
+            bankCode
         )
     }
 }

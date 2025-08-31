@@ -30,9 +30,9 @@ internal data class PaymentProviderProps(
         val baseUrl: String = "https://sb-openapi.zalopay.vn",
         val saleUri: String = "/v2/create",
         val refundUri: String = "/v2/refund",
+        val expireDurationSeconds: Long = 86400,
         val appId: Int = 0,
         val macKey: String = "",
-        val returnUrl: String = "",
-        val cancelUrl: String = ""
+        val subAppId: String? = ""
     )
 }

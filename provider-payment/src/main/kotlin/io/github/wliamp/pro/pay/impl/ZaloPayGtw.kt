@@ -1,8 +1,8 @@
 package io.github.wliamp.pro.pay.impl
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import io.github.wliamp.pro.pay.cus.ZaloPayCus
+import io.github.wliamp.pro.pay.sys.ZaloPaySys
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
@@ -13,49 +13,46 @@ import javax.crypto.spec.SecretKeySpec
 internal class ZaloPayGtw internal constructor(
     private val props: PaymentProviderProps.ZaloPayProps,
     private val webClient: WebClient
-) : IGtw<ZaloPayCus> {
+) : IGtw<ZaloPayCus, ZaloPaySys> {
     private val provider = "zaloPay"
 
     @Deprecated(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun authorize(request: ZaloPayCus): Mono<Any> =
+    override fun authorize(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay authorize-only unsupported"))
 
     @Deprecated(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun capture(request: ZaloPayCus): Mono<Any> =
+    override fun capture(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay capture unsupported"))
 
-    override fun sale(request: ZaloPayCus): Mono<Any> =
+    override fun sale(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         props.takeIf {
-            it.appId.isNotBlank() &&
-                it.macKey.isNotBlank() &&
-                it.returnUrl.isNotBlank() &&
-                it.cancelUrl.isNotBlank()
+            (it.appId > 0) &&
+                it.macKey.isNotBlank()
         }?.let { p ->
             val appId = p.appId
-            val appTransId = request.appTransId
-            val appUser = request.appUser ?: ""
-            val amount = (request.amount.toInt() * 100).toString()
+            val appUser = sys.appUser ?: ""
+            val appTransId = sys.appTransId
             val appTime = System.currentTimeMillis().toString()
-            val embedData = request.embedData ?: "{}"
-            val item = request.item ?: "[]"
+            val amount = cus.amount
+            val item = cus.item ?: "[]"
+            val description = cus.description ?: "Payment for the order #${appTransId}"
+            val embedData = cus.embedData ?: "{}"
             val body = mutableMapOf(
                 "app_id" to appId,
-                "app_trans_id" to appTransId,
-                "amount" to amount,
-                "description" to (request.description ?: "Create Payment for app_trans_id=${request.appTransId}"),
-                "url" to p.returnUrl,
-                "cancel_url" to p.cancelUrl,
-                "lang" to p.locale,
                 "app_user" to appUser,
+                "app_trans_id" to appTransId,
                 "app_time" to appTime,
-                "embed_data" to embedData,
+                "expire_duration_seconds" to p.expireDurationSeconds,
+                "amount" to amount,
                 "item" to item,
+                "description" to description,
+                "embed_data" to embedData,
                 "mac" to hmacSHA256Sale(
                     p.macKey,
                     appId,
@@ -67,12 +64,10 @@ internal class ZaloPayGtw internal constructor(
                     item,
                 )
             )
-            request.orderCode?.let { body["order_code"] = it }
-            request.paymentId?.let { body["payment_id"] = it }
-            request.callbackUrl?.let { body["callback_url"] = it }
-            request.preferredPaymentMethod?.let {
-                body["preferred_payment_method"] = ObjectMapper().writeValueAsString(it)
-            }
+            cus.bankCode?.let { body["bank_code"] = it }
+            cus.deviceInfo?.let { body["device_info"] = it }
+            p.subAppId?.let { body["sub_app_id"] = it }
+            sys.callbackUrl?.let { body["callback_url"] = it }
             webClient.post()
                 .uri("${p.baseUrl}${p.saleUri}")
                 .bodyValue(body)
@@ -81,10 +76,16 @@ internal class ZaloPayGtw internal constructor(
                     Mono.error(IllegalStateException("ZaloPay sale failed: ${response.statusCode()}"))
                 }
                 .bodyToMono(Map::class.java)
-                .map { response ->
+                .map { resp ->
                     mapOf(
-                        "url" to response["pay_url"],
-                        "orderId" to request.appTransId
+                        "resultCode" to resp["return_code"],
+                        "resultMsg" to resp["return_message"],
+                        "subResultCode" to resp["sub_return_code"],
+                        "subResultMsg" to resp["sub_return_message"],
+                        "paymentUrl" to resp["order_url"],
+                        "zpTransToken" to resp["zp_trans_token"],
+                        "orderToken" to resp["order_token"],
+                        "qrCode" to resp["qr_code"]
                     )
                 }
         } ?: Mono.error(
@@ -98,14 +99,16 @@ internal class ZaloPayGtw internal constructor(
             )
         )
 
-    override fun refund(request: ZaloPayCus): Mono<Any> =
+    override fun refund(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         props.takeIf {
-            it.appId.isNotBlank() &&
+            (it.appId > 0) &&
                 it.macKey.isNotBlank()
         }?.let { p ->
             val appId = p.appId
-            val zpTransId = request.zpTransId
-            val amount = (request.amount.toInt() * 100).toString()
+            val mRefundId =
+
+            val zpTransId = sys.zpTransToken
+            val amount = cus.amount
             val description = "Refund for order ${request.appTransId}"
             val timestamp = System.currentTimeMillis().toString()
             val body = mapOf(
@@ -151,15 +154,15 @@ internal class ZaloPayGtw internal constructor(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun void(request: ZaloPayCus): Mono<Any> =
+    override fun void(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay void unsupported"))
 
     private fun hmacSHA256Sale(
         macKey: String,
-        appId: String,
+        appId: Int,
         appTransId: String,
         appUser: String,
-        amount: String,
+        amount: Long,
         appTime: String,
         embedData: String,
         item: String
