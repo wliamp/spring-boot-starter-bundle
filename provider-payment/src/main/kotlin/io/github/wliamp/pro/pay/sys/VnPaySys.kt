@@ -11,7 +11,7 @@ data class VnPaySys(
     val vnpTxnRef: String?,
     val vnpRequestId: String?
 
-): OSys(){
+) : OSys() {
     companion object {
         @JvmStatic
         fun builder() = Builder()

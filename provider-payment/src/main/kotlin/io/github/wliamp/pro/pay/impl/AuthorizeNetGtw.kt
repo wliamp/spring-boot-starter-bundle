@@ -2,6 +2,7 @@ package io.github.wliamp.pro.pay.impl
 
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import io.github.wliamp.pro.pay.cus.AuthorizeNetCus
+import io.github.wliamp.pro.pay.sys.AuthorizeNetSys
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
@@ -10,53 +11,53 @@ import reactor.core.publisher.Mono
 internal class AuthorizeNetGtw internal constructor(
     private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IGtw<AuthorizeNetCus> {
+) : IGtw<AuthorizeNetCus, AuthorizeNetSys> {
     private val provider = "authorizeNet"
 
-    override fun authorize(request: AuthorizeNetCus): Mono<Any> =
-        getHostedPaymentToken("authOnlyTransaction", request)
+    override fun authorize(cus: AuthorizeNetCus, sys: AuthorizeNetSys): Mono<Any> =
+        getHostedPaymentToken("authOnlyTransaction", cus, sys)
 
-    override fun sale(request: AuthorizeNetCus): Mono<Any> =
-        getHostedPaymentToken("authCaptureTransaction", request)
+    override fun sale(cus: AuthorizeNetCus, sys: AuthorizeNetSys): Mono<Any> =
+        getHostedPaymentToken("authCaptureTransaction", cus, sys)
 
-    override fun capture(request: AuthorizeNetCus): Mono<Any> =
+    override fun capture(cus: AuthorizeNetCus, sys: AuthorizeNetSys): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "priorAuthCaptureTransaction",
-                        "amount" to request.amount,
-                        "refTransId" to request.refTransId
+                        "amount" to cus.amount,
+                        "refTransId" to sys.refTransId
                     )
                 )
             )
             callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun refund(request: AuthorizeNetCus): Mono<Any> =
+    override fun refund(cus: AuthorizeNetCus, sys: AuthorizeNetSys): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "refundTransaction",
-                        "amount" to request.amount,
-                        "refTransId" to request.refTransId
+                        "amount" to cus.amount,
+                        "refTransId" to sys.refTransId
                     )
                 )
             )
             callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun void(request: AuthorizeNetCus): Mono<Any> =
+    override fun void(cus: AuthorizeNetCus, sys: AuthorizeNetSys): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
                     "merchantAuthentication" to merchantAuth(),
                     "transactionRequest" to mapOf(
                         "transactionType" to "voidTransaction",
-                        "refTransId" to request.refTransId
+                        "refTransId" to sys.refTransId
                     )
                 )
             )
@@ -65,17 +66,18 @@ internal class AuthorizeNetGtw internal constructor(
 
     private fun getHostedPaymentToken(
         transactionType: String,
-        request: AuthorizeNetCus
+        cus: AuthorizeNetCus,
+        sys: AuthorizeNetSys
     ): Mono<Any> =
         requireAuthKeys().flatMap {
-            val txnReq = mutableMapOf<String, Any>(
+            val txnReq = mutableMapOf<String, Any?>(
                 "transactionType" to transactionType,
-                "amount" to request.amount
+                "amount" to cus.amount
             ).apply {
-                if (request.orderId.isNotBlank() || !request.description.isNullOrBlank()) {
+                if (!sys.orderId.isNullOrBlank() || !sys.description.isNullOrBlank()) {
                     this["order"] = mapOf(
-                        "orderId" to request.orderId,
-                        "description" to (request.description ?: ("Create Payment for orderId="+request.orderId))
+                        "orderId" to sys.orderId,
+                        "description" to (sys.description ?: ("Create Payment for orderId=" + sys.orderId))
                     )
                 }
             }
