@@ -1,6 +1,6 @@
-package io.github.wliamp.pro.pay.req
+package io.github.wliamp.pro.pay.cus
 
-data class VnPayRequest(
+data class VnPayCus(
     val vnpAmount: String,
     val vnpBankCode: String?,
     val vnpCreateBy: String?,
@@ -12,7 +12,7 @@ data class VnPayRequest(
     val vnpTransactionNo: String,
     val vnpTransactionType: String?,
     val vnpTxnRef: String
-) : ORequest() {
+) : OCus() {
     companion object {
         @JvmStatic
         fun builder() = Builder()
@@ -43,7 +43,7 @@ data class VnPayRequest(
         fun vnpTransactionType(vnpTransactionType: String) = apply { this.vnpTransactionType = vnpTransactionType }
         fun vnpTxnRef(vnpTxnRef: String) = apply { this.vnpTxnRef = vnpTxnRef }
 
-        fun build() = VnPayRequest(
+        fun build() = VnPayCus(
             vnpAmount,
             vnpBankCode,
             vnpCreateBy,

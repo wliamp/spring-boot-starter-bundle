@@ -2,7 +2,7 @@ package io.github.wliamp.pro.pay.impl
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
-import io.github.wliamp.pro.pay.req.ZaloPayRequest
+import io.github.wliamp.pro.pay.cus.ZaloPayCus
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
@@ -13,24 +13,24 @@ import javax.crypto.spec.SecretKeySpec
 internal class ZaloPayGtw internal constructor(
     private val props: PaymentProviderProps.ZaloPayProps,
     private val webClient: WebClient
-) : IGtw<ZaloPayRequest> {
+) : IGtw<ZaloPayCus> {
     private val provider = "zaloPay"
 
     @Deprecated(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun authorize(request: ZaloPayRequest): Mono<Any> =
+    override fun authorize(request: ZaloPayCus): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay authorize-only unsupported"))
 
     @Deprecated(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun capture(request: ZaloPayRequest): Mono<Any> =
+    override fun capture(request: ZaloPayCus): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay capture unsupported"))
 
-    override fun sale(request: ZaloPayRequest): Mono<Any> =
+    override fun sale(request: ZaloPayCus): Mono<Any> =
         props.takeIf {
             it.appId.isNotBlank() &&
                 it.macKey.isNotBlank() &&
@@ -74,7 +74,7 @@ internal class ZaloPayGtw internal constructor(
                 body["preferred_payment_method"] = ObjectMapper().writeValueAsString(it)
             }
             webClient.post()
-                .uri("${p.baseUrl}/v2/payment")
+                .uri("${p.baseUrl}${p.saleUri}")
                 .bodyValue(body)
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
@@ -98,7 +98,7 @@ internal class ZaloPayGtw internal constructor(
             )
         )
 
-    override fun refund(request: ZaloPayRequest): Mono<Any> =
+    override fun refund(request: ZaloPayCus): Mono<Any> =
         props.takeIf {
             it.appId.isNotBlank() &&
                 it.macKey.isNotBlank()
@@ -125,7 +125,7 @@ internal class ZaloPayGtw internal constructor(
                 )
             )
             webClient.post()
-                .uri("${p.baseUrl}/v2/refund")
+                .uri("${p.baseUrl}${p.refundUri}")
                 .bodyValue(body)
                 .retrieve()
                 .onStatus({ it.isError }) { response ->
@@ -151,7 +151,7 @@ internal class ZaloPayGtw internal constructor(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun void(request: ZaloPayRequest): Mono<Any> =
+    override fun void(request: ZaloPayCus): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay void unsupported"))
 
     private fun hmacSHA256Sale(

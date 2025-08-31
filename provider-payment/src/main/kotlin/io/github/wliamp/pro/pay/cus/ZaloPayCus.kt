@@ -1,8 +1,6 @@
-package io.github.wliamp.pro.pay.req
+package io.github.wliamp.pro.pay.cus
 
-import io.github.wliamp.pro.pay.impl.ORequest
-
-data class ZaloPayRequest(
+data class ZaloPayCus(
     val amount: String,
     val appUser: String?,
     val appTransId: String,
@@ -14,7 +12,7 @@ data class ZaloPayRequest(
     val paymentId: String?,
     val preferredPaymentMethod: String?,
     val zpTransId: String
-) : ORequest() {
+) : OCus() {
     companion object {
         @JvmStatic
         fun builder() = Builder()
@@ -31,7 +29,7 @@ data class ZaloPayRequest(
         fun description(description: String?) = apply { this.description = description }
         fun zpTransId(zpTransId: String) = apply { this.zpTransId = zpTransId }
 
-        fun build() = ZaloPayRequest(
+        fun build() = ZaloPayCus(
             amount,
             appTransId,
             description,

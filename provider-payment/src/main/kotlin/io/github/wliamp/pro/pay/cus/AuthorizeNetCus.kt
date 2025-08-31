@@ -1,11 +1,11 @@
-package io.github.wliamp.pro.pay.req
+package io.github.wliamp.pro.pay.cus
 
-data class AuthorizeNetRequest(
+data class AuthorizeNetCus(
     val amount: String,
     val description: String?,
     val orderId: String,
     val refTransId: String,
-) : ORequest() {
+) : OCus() {
     companion object {
         @JvmStatic
         fun builder() = Builder()
@@ -22,7 +22,7 @@ data class AuthorizeNetRequest(
         fun orderId(orderId: String) = apply { this.orderId = orderId }
         fun refTransId(refTransId: String) = apply { this.refTransId = refTransId }
 
-        fun build() = AuthorizeNetRequest(
+        fun build() = AuthorizeNetCus(
             amount,
             description,
             orderId,

@@ -5,9 +5,9 @@ import io.github.wliamp.pro.pay.impl.AuthorizeNetGtw
 import io.github.wliamp.pro.pay.impl.IGtw
 import io.github.wliamp.pro.pay.impl.VnPayGtw
 import io.github.wliamp.pro.pay.impl.ZaloPayGtw
-import io.github.wliamp.pro.pay.req.AuthorizeNetRequest
-import io.github.wliamp.pro.pay.req.VnPayRequest
-import io.github.wliamp.pro.pay.req.ZaloPayRequest
+import io.github.wliamp.pro.pay.cus.AuthorizeNetCus
+import io.github.wliamp.pro.pay.cus.VnPayCus
+import io.github.wliamp.pro.pay.cus.ZaloPayCus
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -29,7 +29,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun an(): IGtw<AuthorizeNetRequest> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
+    fun an(): IGtw<AuthorizeNetCus> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,7 +38,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun vp(): IGtw<VnPayRequest> = VnPayGtw(vnPayProps, WebClient.builder().build())
+    fun vp(): IGtw<VnPayCus> = VnPayGtw(vnPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -47,14 +47,14 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zp(): IGtw<ZaloPayRequest> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
+    fun zp(): IGtw<ZaloPayCus> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun pay(
-        an: IGtw<AuthorizeNetRequest>,
-        vp: IGtw<VnPayRequest>,
-        zp: IGtw<ZaloPayRequest>
+        an: IGtw<AuthorizeNetCus>,
+        vp: IGtw<VnPayCus>,
+        zp: IGtw<ZaloPayCus>
     ): PaymentProvider = PaymentProvider(
         an,
         vp,

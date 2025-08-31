@@ -27,9 +27,10 @@ internal data class PaymentProviderProps(
     )
 
     data class ZaloPayProps(
-        val baseUrl: String = "https://api.zalopay.vn",
-        val locale: String = "vi",
-        val appId: String = "",
+        val baseUrl: String = "https://sb-openapi.zalopay.vn",
+        val saleUri: String = "/v2/create",
+        val refundUri: String = "/v2/refund",
+        val appId: Int = 0,
         val macKey: String = "",
         val returnUrl: String = "",
         val cancelUrl: String = ""

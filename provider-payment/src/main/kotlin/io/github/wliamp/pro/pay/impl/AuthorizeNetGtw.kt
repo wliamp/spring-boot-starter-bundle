@@ -1,7 +1,7 @@
 package io.github.wliamp.pro.pay.impl
 
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
-import io.github.wliamp.pro.pay.req.AuthorizeNetRequest
+import io.github.wliamp.pro.pay.cus.AuthorizeNetCus
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
@@ -10,16 +10,16 @@ import reactor.core.publisher.Mono
 internal class AuthorizeNetGtw internal constructor(
     private val props: PaymentProviderProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IGtw<AuthorizeNetRequest> {
+) : IGtw<AuthorizeNetCus> {
     private val provider = "authorizeNet"
 
-    override fun authorize(request: AuthorizeNetRequest): Mono<Any> =
+    override fun authorize(request: AuthorizeNetCus): Mono<Any> =
         getHostedPaymentToken("authOnlyTransaction", request)
 
-    override fun sale(request: AuthorizeNetRequest): Mono<Any> =
+    override fun sale(request: AuthorizeNetCus): Mono<Any> =
         getHostedPaymentToken("authCaptureTransaction", request)
 
-    override fun capture(request: AuthorizeNetRequest): Mono<Any> =
+    override fun capture(request: AuthorizeNetCus): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
@@ -34,7 +34,7 @@ internal class AuthorizeNetGtw internal constructor(
             callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun refund(request: AuthorizeNetRequest): Mono<Any> =
+    override fun refund(request: AuthorizeNetCus): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
@@ -49,7 +49,7 @@ internal class AuthorizeNetGtw internal constructor(
             callJsonApi(body).map(::mapTxnResponse)
         }
 
-    override fun void(request: AuthorizeNetRequest): Mono<Any> =
+    override fun void(request: AuthorizeNetCus): Mono<Any> =
         requireAuthKeys().flatMap {
             val body = mapOf(
                 "createTransactionRequest" to mapOf(
@@ -65,7 +65,7 @@ internal class AuthorizeNetGtw internal constructor(
 
     private fun getHostedPaymentToken(
         transactionType: String,
-        request: AuthorizeNetRequest
+        request: AuthorizeNetCus
     ): Mono<Any> =
         requireAuthKeys().flatMap {
             val txnReq = mutableMapOf<String, Any>(

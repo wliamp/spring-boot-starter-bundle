@@ -1,7 +1,7 @@
 package io.github.wliamp.pro.pay.impl
 
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
-import io.github.wliamp.pro.pay.req.VnPayRequest
+import io.github.wliamp.pro.pay.cus.VnPayCus
 import io.github.wliamp.pro.pay.util.putIfNotBlank
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -17,24 +17,24 @@ import java.util.*
 
 internal class VnPayGtw internal constructor(
     private val props: PaymentProviderProps.VnPayProps, private val webClient: WebClient
-) : IGtw<VnPayRequest> {
+) : IGtw<VnPayCus> {
     private val provider = "vnPay"
 
     @Deprecated(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun authorize(request: VnPayRequest): Mono<Any> =
+    override fun authorize(request: VnPayCus): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay authorize-only unsupported"))
 
     @Deprecated(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun capture(request: VnPayRequest): Mono<Any> =
+    override fun capture(request: VnPayCus): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay capture unsupported"))
 
-    override fun sale(request: VnPayRequest): Mono<Any> =
+    override fun sale(request: VnPayCus): Mono<Any> =
         props.takeIf {
             it.hashSecret.isNotBlank() &&
                 it.returnUrl.isNotBlank() &&
@@ -71,7 +71,7 @@ internal class VnPayGtw internal constructor(
             )
         )
 
-    override fun refund(request: VnPayRequest): Mono<Any> =
+    override fun refund(request: VnPayCus): Mono<Any> =
         props.takeIf {
             it.hashSecret.isNotBlank() &&
                 it.tmnCode.isNotBlank()
@@ -121,7 +121,7 @@ internal class VnPayGtw internal constructor(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun void(request: VnPayRequest): Mono<Any> =
+    override fun void(request: VnPayCus): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay unsupported this action"))
 
     private fun hmacSHA512(key: String, data: String): String =
