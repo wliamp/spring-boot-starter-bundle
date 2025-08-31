@@ -1,13 +1,16 @@
 package io.github.wliamp.pro.pay.config
 
-import io.github.wliamp.pro.pay.AuthorizeNetRequest
 import io.github.wliamp.pro.pay.PaymentProvider
-import io.github.wliamp.pro.pay.VnPayRequest
-import io.github.wliamp.pro.pay.ZaloPayRequest
-import io.github.wliamp.pro.pay.gtw.AuthorizeNetGtw
-import io.github.wliamp.pro.pay.gtw.IGtw
-import io.github.wliamp.pro.pay.gtw.VnPayGtw
-import io.github.wliamp.pro.pay.gtw.ZaloPayGtw
+import io.github.wliamp.pro.pay.impl.AuthorizeNetGtw
+import io.github.wliamp.pro.pay.impl.IGtw
+import io.github.wliamp.pro.pay.impl.VnPayGtw
+import io.github.wliamp.pro.pay.impl.ZaloPayGtw
+import io.github.wliamp.pro.pay.cus.AuthorizeNetCus
+import io.github.wliamp.pro.pay.cus.VnPayCus
+import io.github.wliamp.pro.pay.cus.ZaloPayCus
+import io.github.wliamp.pro.pay.sys.AuthorizeNetSys
+import io.github.wliamp.pro.pay.sys.VnPaySys
+import io.github.wliamp.pro.pay.sys.ZaloPaySys
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -29,7 +32,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun an(): IGtw<AuthorizeNetRequest> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
+    fun an(): IGtw<AuthorizeNetCus, AuthorizeNetSys> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,7 +41,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun vp(): IGtw<VnPayRequest> = VnPayGtw(vnPayProps, WebClient.builder().build())
+    fun vp(): IGtw<VnPayCus, VnPaySys> = VnPayGtw(vnPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -47,16 +50,17 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zp(): IGtw<ZaloPayRequest> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
+    fun zp(): IGtw<ZaloPayCus, ZaloPaySys> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun pay(
-        an: IGtw<AuthorizeNetRequest>,
-        vp: IGtw<VnPayRequest>,
-        zp: IGtw<ZaloPayRequest>
+        an: IGtw<AuthorizeNetCus, AuthorizeNetSys>,
+        vp: IGtw<VnPayCus, VnPaySys>,
+        zp: IGtw<ZaloPayCus, ZaloPaySys>
     ): PaymentProvider = PaymentProvider(
         an,
         vp,
-        zp)
+        zp
+    )
 }
