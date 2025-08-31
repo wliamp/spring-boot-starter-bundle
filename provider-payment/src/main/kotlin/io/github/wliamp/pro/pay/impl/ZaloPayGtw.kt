@@ -3,10 +3,13 @@ package io.github.wliamp.pro.pay.impl
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import io.github.wliamp.pro.pay.cus.ZaloPayCus
 import io.github.wliamp.pro.pay.sys.ZaloPaySys
+import io.github.wliamp.pro.pay.util.formatDate
+import io.github.wliamp.pro.pay.util.generateCode
+import io.github.wliamp.pro.pay.util.optional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.time.LocalDateTime
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -33,7 +36,7 @@ internal class ZaloPayGtw internal constructor(
     override fun sale(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         props.takeIf {
             (it.appId > 0) &&
-                it.macKey.isNotBlank()
+                it.key1.isNotBlank()
         }?.let { p ->
             val appId = p.appId
             val appUser = sys.appUser ?: ""
@@ -43,7 +46,7 @@ internal class ZaloPayGtw internal constructor(
             val item = cus.item ?: "[]"
             val description = cus.description ?: "Payment for the order #${appTransId}"
             val embedData = cus.embedData ?: "{}"
-            val body = mutableMapOf(
+            val body = mutableMapOf<String, Any>(
                 "app_id" to appId,
                 "app_user" to appUser,
                 "app_trans_id" to appTransId,
@@ -53,8 +56,8 @@ internal class ZaloPayGtw internal constructor(
                 "item" to item,
                 "description" to description,
                 "embed_data" to embedData,
-                "mac" to hmacSHA256Sale(
-                    p.macKey,
+                "mac" to macSale(
+                    p.key1,
                     appId,
                     appTransId,
                     appUser,
@@ -64,10 +67,10 @@ internal class ZaloPayGtw internal constructor(
                     item,
                 )
             )
-            cus.bankCode?.let { body["bank_code"] = it }
-            cus.deviceInfo?.let { body["device_info"] = it }
-            p.subAppId?.let { body["sub_app_id"] = it }
-            sys.callbackUrl?.let { body["callback_url"] = it }
+            body.optional("bank_code", cus.bankCode)
+            body.optional("device_info", cus.deviceInfo)
+            body.optional("sub_app_id", p.subAppId)
+            body.optional("callback_url", sys.callbackUrl)
             webClient.post()
                 .uri("${p.baseUrl}${p.saleUri}")
                 .bodyValue(body)
@@ -102,31 +105,46 @@ internal class ZaloPayGtw internal constructor(
     override fun refund(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         props.takeIf {
             (it.appId > 0) &&
-                it.macKey.isNotBlank()
+                it.key1.isNotBlank()
         }?.let { p ->
+            val key1 = p.key1
             val appId = p.appId
             val mRefundId =
-
-            val zpTransId = sys.zpTransToken
+                "${formatDate(LocalDateTime.now(), "yyMMdd")}_" +
+                    "${appId}_" +
+                    generateCode((37 - "$appId".length).coerceAtLeast(0))
+            val zpTransId = sys.zpTransId
             val amount = cus.amount
-            val description = "Refund for order ${request.appTransId}"
-            val timestamp = System.currentTimeMillis().toString()
-            val body = mapOf(
+            val refundFeeAmount = sys.refundFeeAmount
+            val timestamp = System.currentTimeMillis()
+            val description = cus.description ?: "Refund for order ${sys.appTransId}"
+            val body = mutableMapOf<String, Any>(
+                "m_refund_id" to mRefundId,
                 "app_id" to appId,
-                "m_refund_id" to UUID.randomUUID().toString(),
                 "zp_trans_id" to zpTransId,
                 "amount" to amount,
-                "timestamp" to timestamp,
-                "description" to description,
-                "mac" to hmacSHA256Refund(
-                    p.macKey,
+                "timestamp" to timestamp
+            )
+            body.optional("refund_fee_amount", refundFeeAmount)
+            body["mac"] = body["refund_fee_amount"]?.let {
+                macRefundWithoutFee(
+                    key1,
                     appId,
                     zpTransId,
                     amount,
                     description,
                     timestamp
                 )
+            } ?: macRefundWithFee(
+                key1,
+                appId,
+                zpTransId,
+                amount,
+                refundFeeAmount,
+                description,
+                timestamp
             )
+            body["description"] = description
             webClient.post()
                 .uri("${p.baseUrl}${p.refundUri}")
                 .bodyValue(body)
@@ -157,8 +175,8 @@ internal class ZaloPayGtw internal constructor(
     override fun void(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay void unsupported"))
 
-    private fun hmacSHA256Sale(
-        macKey: String,
+    private fun macSale(
+        key1: String,
         appId: Int,
         appTransId: String,
         appUser: String,
@@ -167,22 +185,34 @@ internal class ZaloPayGtw internal constructor(
         embedData: String,
         item: String
     ): String =
-        hmacSHA256(macKey, listOf(appId, appTransId, appUser, amount, appTime, embedData, item).joinToString("|"))
+        hmacSHA256(key1, listOf(appId, appTransId, appUser, amount, appTime, embedData, item).joinToString("|"))
 
-    private fun hmacSHA256Refund(
-        macKey: String,
-        appId: String,
+    private fun macRefundWithoutFee(
+        key1: String,
+        appId: Int,
         zpTransId: String,
-        amount: String,
+        amount: Long,
         description: String,
-        timestamp: String
+        timestamp: Long
     ): String =
-        hmacSHA256(macKey, listOf(appId, zpTransId, amount, description, timestamp).joinToString("|"))
+        hmacSHA256(key1, listOf(appId, zpTransId, amount, description, timestamp).joinToString("|"))
 
-    private fun hmacSHA256(macKey: String, data: String): String =
+    private fun macRefundWithFee(
+        key1: String,
+        appId: Int,
+        zpTransId: String,
+        amount: Long,
+        refundFeeAmount: Long?,
+        description: String,
+        timestamp: Long
+    ): String =
+        hmacSHA256(key1, listOf(appId, zpTransId, amount, refundFeeAmount, description, timestamp).joinToString("|"))
+
+    private fun hmacSHA256(key: String, data: String): String =
         Mac.getInstance("HmacSHA256").run {
-            init(SecretKeySpec(macKey.toByteArray(StandardCharsets.UTF_8), "HmacSHA256"))
+            init(SecretKeySpec(key.toByteArray(StandardCharsets.UTF_8), "HmacSHA256"))
             doFinal(data.toByteArray(StandardCharsets.UTF_8))
                 .joinToString("") { "%02x".format(it) }
         }
 }
+

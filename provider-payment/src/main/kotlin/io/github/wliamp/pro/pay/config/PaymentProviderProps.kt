@@ -32,7 +32,7 @@ internal data class PaymentProviderProps(
         val refundUri: String = "/v2/refund",
         val expireDurationSeconds: Long = 86400,
         val appId: Int = 0,
-        val macKey: String = "",
+        val key1: String = "",
         val subAppId: String? = ""
     )
 }

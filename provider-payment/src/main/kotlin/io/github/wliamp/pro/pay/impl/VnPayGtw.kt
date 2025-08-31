@@ -2,7 +2,7 @@ package io.github.wliamp.pro.pay.impl
 
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import io.github.wliamp.pro.pay.cus.VnPayCus
-import io.github.wliamp.pro.pay.util.putIfNotBlank
+import io.github.wliamp.pro.pay.util.optional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URLEncoder
@@ -41,7 +41,7 @@ internal class VnPayGtw internal constructor(
                 it.tmnCode.isNotBlank()
         }?.let { p ->
             val now = LocalDateTime.now()
-            val body = mutableMapOf(
+            val body = mutableMapOf<String, Any>(
                 "vnp_Version" to p.version,
                 "vnp_Command" to "pay",
                 "vnp_CurrCode" to "VND",
@@ -53,7 +53,7 @@ internal class VnPayGtw internal constructor(
                 "vnp_CreateDate" to formatDate(now),
                 "vnp_ExpireDate" to formatDate(now.plusMinutes(p.expiredMinutes))
             )
-            body.putIfNotBlank("vnp_BankCode", request.vnpBankCode)
+            body.optional("vnp_BankCode", request.vnpBankCode)
             body.putIfNotBlank("vnp_Locale", request.vnpLocale)
             body.putIfNotBlank("vnp_OrderInfo", request.vnpOrderInfo)
             body.putIfNotBlank("vnp_OrderType", request.vnpOrderType)
