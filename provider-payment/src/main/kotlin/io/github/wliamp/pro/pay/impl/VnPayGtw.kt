@@ -2,39 +2,38 @@ package io.github.wliamp.pro.pay.impl
 
 import io.github.wliamp.pro.pay.config.PaymentProviderProps
 import io.github.wliamp.pro.pay.cus.VnPayCus
+import io.github.wliamp.pro.pay.sys.VnPaySys
 import io.github.wliamp.pro.pay.util.optional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.*
 
 internal class VnPayGtw internal constructor(
-    private val props: PaymentProviderProps.VnPayProps, private val webClient: WebClient
-) : IGtw<VnPayCus> {
+    private val props: PaymentProviderProps.VnPayProps,
+    private val webClient: WebClient
+) : IGtw<VnPayCus, VnPaySys> {
     private val provider = "vnPay"
 
     @Deprecated(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun authorize(request: VnPayCus): Mono<Any> =
+    override fun authorize(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay authorize-only unsupported"))
 
     @Deprecated(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun capture(request: VnPayCus): Mono<Any> =
+    override fun capture(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay capture unsupported"))
 
-    override fun sale(request: VnPayCus): Mono<Any> =
+    override fun sale(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
         props.takeIf {
             it.hashSecret.isNotBlank() &&
                 it.returnUrl.isNotBlank() &&
@@ -54,9 +53,9 @@ internal class VnPayGtw internal constructor(
                 "vnp_ExpireDate" to formatDate(now.plusMinutes(p.expiredMinutes))
             )
             body.optional("vnp_BankCode", request.vnpBankCode)
-            body.putIfNotBlank("vnp_Locale", request.vnpLocale)
-            body.putIfNotBlank("vnp_OrderInfo", request.vnpOrderInfo)
-            body.putIfNotBlank("vnp_OrderType", request.vnpOrderType)
+            body.optional("vnp_Locale", request.vnpLocale)
+            body.optional("vnp_OrderInfo", request.vnpOrderInfo)
+            body.optional("vnp_OrderType", request.vnpOrderType)
             val query = body.entries
                 .sortedBy { it.key }
                 .joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, StandardCharsets.UTF_8)}" }
@@ -71,12 +70,12 @@ internal class VnPayGtw internal constructor(
             )
         )
 
-    override fun refund(request: VnPayCus): Mono<Any> =
+    override fun refund(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
         props.takeIf {
             it.hashSecret.isNotBlank() &&
                 it.tmnCode.isNotBlank()
         }?.let { p ->
-            val body = mutableMapOf(
+            val body = mutableMapOf<String, Any>(
                 "vnp_Version" to p.version,
                 "vnp_Command" to "refund",
                 "vnp_RequestId" to UUID.randomUUID().toString(),
@@ -89,7 +88,7 @@ internal class VnPayGtw internal constructor(
                 "vnp_TransactionDate" to formatDate(request.vnpTransactionDate),
                 "vnp_CreateBy" to (request.vnpCreateBy ?: "system")
             )
-            body.putIfNotBlank("vnp_Locale", request.vnpLocale)
+            body.optinal("vnp_Locale", request.vnpLocale)
             body.putIfNotBlank("vnp_TransactionNo", request.vnpTransactionNo)
             val query = body + ("vnp_SecureHash" to hmacSHA512(
                 p.hashSecret,
@@ -121,7 +120,7 @@ internal class VnPayGtw internal constructor(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun void(request: VnPayCus): Mono<Any> =
+    override fun void(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
         Mono.error(UnsupportedOperationException("VNPay unsupported this action"))
 
     private fun hmacSHA512(key: String, data: String): String =
@@ -130,16 +129,4 @@ internal class VnPayGtw internal constructor(
         doFinal(data.toByteArray(StandardCharsets.UTF_8))
             .joinToString("") { "%02x".format(it) }
     }
-
-    private fun formatDate(input: Any): String = when (input) {
-        is String -> runCatching {
-            LocalDateTime.parse(input, DateTimeFormatter.ISO_DATE_TIME)
-        }.getOrElse {
-            LocalDateTime.parse(input, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        }
-
-        is Long -> LocalDateTime.ofInstant(Instant.ofEpochMilli(input), ZoneId.systemDefault())
-        is LocalDateTime -> input
-        else -> throw IllegalArgumentException("Unsupported date type for VNPay: ${input::class}")
-    }.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
 }
