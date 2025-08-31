@@ -20,7 +20,7 @@ internal fun generateCode(size: Int): String =
     UUID.randomUUID().toString().replace("-", "")
         .take(size)
 
-internal fun formatDate(input: Any, pattern: String): String =
+internal fun formatDate(input: Any?, pattern: String): String =
     when (input) {
         is String -> runCatching {
             LocalDateTime.parse(input, DateTimeFormatter.ISO_DATE_TIME)

@@ -18,11 +18,12 @@ internal data class PaymentProviderProps(
     )
 
     data class VnPayProps(
-        var baseUrl: String = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
-        var version: String = "2.1.0",
+        var baseUrl: String = "https://sandbox.vnpayment.vn",
+        val saleUri: String = "/paymentv2/vpcpay.html",
+        val refundUri: String = "/merchant_webapi/api/transaction",
         var expiredMinutes: Long = 15,
-        var hashSecret: String = "",
         var returnUrl: String = "",
+        var secretKey: String = "",
         var tmnCode: String = ""
     )
 
@@ -33,6 +34,6 @@ internal data class PaymentProviderProps(
         val expireDurationSeconds: Long = 86400,
         val appId: Int = 0,
         val key1: String = "",
-        val subAppId: String? = ""
+        val subAppId: String = ""
     )
 }
