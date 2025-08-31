@@ -77,29 +77,11 @@ data class VnPayCus(
         fun vnpInvType(vnpInvType: String?) = apply { this.vnpInvType = vnpInvType }
 
         fun build() = VnPayCus(
-            vnpAmount,
-            vnpBankCode,
-            vnpCreateBy,
-            vnpIpAddr,
-            vnpLocale,
-            vnpTransactionDate,
-            vnpTransactionNo,
-            vnpTransactionType,
-            vnpBillMobile,
-            vnpBillEmail,
-            vnpBillFirstName,
-            vnpBillLastName,
-            vnpBillAddress,
-            vnpBillCity,
-            vnpBillCountry,
-            vnpBillState,
-            vnpInvPhone,
-            vnpInvEmail,
-            vnpInvCustomer,
-            vnpInvAddress,
-            vnpInvCompany,
-            vnpInvTaxcode,
-            vnpInvType
+            vnpAmount, vnpBankCode, vnpCreateBy, vnpIpAddr,
+            vnpLocale, vnpBillMobile, vnpBillEmail, vnpBillFirstName,
+            vnpBillLastName, vnpBillAddress, vnpBillCity, vnpBillCountry,
+            vnpBillState, vnpInvPhone, vnpInvEmail, vnpInvCustomer,
+            vnpInvAddress, vnpInvCompany, vnpInvTaxcode, vnpInvType
         )
     }
 }

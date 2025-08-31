@@ -29,12 +29,9 @@ data class ZaloPayCus(
         fun bankCode(bankCode: String?) = apply { this.bankCode = bankCode }
 
         fun build() = ZaloPayCus(
-            amount,
-            description,
-            deviceInfo,
-            embedData,
-            item,
-            bankCode
+            amount, description,
+            deviceInfo, embedData,
+            item, bankCode
         )
     }
 }

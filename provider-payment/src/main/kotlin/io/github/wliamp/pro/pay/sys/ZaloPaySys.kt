@@ -27,10 +27,8 @@ data class ZaloPaySys(
         fun zpTransId(zpTransId: String) = apply { this.zpTransId = zpTransId }
 
         fun build() = ZaloPaySys(
-            appUser,
-            appTransId,
-            callbackUrl,
-            refundFeeAmount,
+            appUser, appTransId,
+            callbackUrl, refundFeeAmount,
             zpTransId
         )
     }

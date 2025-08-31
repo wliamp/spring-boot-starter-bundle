@@ -8,6 +8,9 @@ import io.github.wliamp.pro.pay.impl.ZaloPayGtw
 import io.github.wliamp.pro.pay.cus.AuthorizeNetCus
 import io.github.wliamp.pro.pay.cus.VnPayCus
 import io.github.wliamp.pro.pay.cus.ZaloPayCus
+import io.github.wliamp.pro.pay.sys.AuthorizeNetSys
+import io.github.wliamp.pro.pay.sys.VnPaySys
+import io.github.wliamp.pro.pay.sys.ZaloPaySys
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -29,7 +32,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun an(): IGtw<AuthorizeNetCus> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
+    fun an(): IGtw<AuthorizeNetCus, AuthorizeNetSys> = AuthorizeNetGtw(authorizeNetProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,7 +41,7 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun vp(): IGtw<VnPayCus> = VnPayGtw(vnPayProps, WebClient.builder().build())
+    fun vp(): IGtw<VnPayCus, VnPaySys> = VnPayGtw(vnPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -47,16 +50,17 @@ internal class PaymentProviderAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zp(): IGtw<ZaloPayCus> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
+    fun zp(): IGtw<ZaloPayCus, ZaloPaySys> = ZaloPayGtw(zaloPayProps, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun pay(
-        an: IGtw<AuthorizeNetCus>,
-        vp: IGtw<VnPayCus>,
-        zp: IGtw<ZaloPayCus>
+        an: IGtw<AuthorizeNetCus, AuthorizeNetSys>,
+        vp: IGtw<VnPayCus, VnPaySys>,
+        zp: IGtw<ZaloPayCus, ZaloPaySys>
     ): PaymentProvider = PaymentProvider(
         an,
         vp,
-        zp)
+        zp
+    )
 }

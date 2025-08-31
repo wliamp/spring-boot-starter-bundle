@@ -5,14 +5,13 @@ import io.github.wliamp.pro.pay.cus.VnPayCus
 import io.github.wliamp.pro.pay.sys.VnPaySys
 import io.github.wliamp.pro.pay.util.formatDate
 import io.github.wliamp.pro.pay.util.generateCode
+import io.github.wliamp.pro.pay.util.hmac
 import io.github.wliamp.pro.pay.util.optional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 import kotlin.toString
 
 internal class VnPayGtw internal constructor(
@@ -26,14 +25,14 @@ internal class VnPayGtw internal constructor(
         level = DeprecationLevel.HIDDEN
     )
     override fun authorize(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
-        Mono.error(UnsupportedOperationException("VNPay authorize-only unsupported"))
+        Mono.error(UnsupportedOperationException("VNPay AUTHORIZE unsupported"))
 
     @Deprecated(
         message = "Not supported by VNPay",
         level = DeprecationLevel.HIDDEN
     )
     override fun capture(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
-        Mono.error(UnsupportedOperationException("VNPay capture unsupported"))
+        Mono.error(UnsupportedOperationException("VNPay CAPTURE unsupported"))
 
     override fun sale(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
         props.takeIf {
@@ -125,21 +124,13 @@ internal class VnPayGtw internal constructor(
                 "vnp_CreateBy" to createBy,
                 "vnp_CreateDate" to createDate,
                 "vnp_IpAddr" to ipAddr,
-                "vnp_SecureHash" to secureHashRefund(
+                "vnp_SecureHash" to hmacSHA512(
                     p.secretKey,
-                    requestId,
-                    version,
-                    command,
-                    tmnCode,
-                    transactionType,
-                    txnRef,
-                    amount,
-                    transactionNo,
-                    transactionDate,
-                    createBy,
-                    createDate,
-                    ipAddr,
-                    orderInfo
+                    listOf(
+                        requestId, version, command, tmnCode,
+                        transactionType, txnRef, amount, transactionNo,
+                        transactionDate, createBy, createDate, ipAddr, orderInfo
+                    ).joinToString("|")
                 )
             )
             webClient.post()
@@ -165,7 +156,7 @@ internal class VnPayGtw internal constructor(
         level = DeprecationLevel.HIDDEN
     )
     override fun void(cus: VnPayCus, sys: VnPaySys): Mono<Any> =
-        Mono.error(UnsupportedOperationException("VNPay unsupported this action"))
+        Mono.error(UnsupportedOperationException("VNPay VOID unsupported"))
 
     private fun querySale(body: Map<String, Any>): String =
         body.entries
@@ -173,45 +164,5 @@ internal class VnPayGtw internal constructor(
             .joinToString("&")
             { "${it.key}=${URLEncoder.encode(it.value.toString(), StandardCharsets.UTF_8.toString())}" }
 
-    private fun secureHashRefund(
-        secretKey: String,
-        requestId: String,
-        version: String,
-        command: String,
-        tmnCode: String,
-        transactionType: String,
-        txnRef: String,
-        amount: String,
-        transactionNo: String,
-        transactionDate: String,
-        createBy: String,
-        createDate: String,
-        ipAddr: String,
-        orderInfo: String
-    ): String =
-        hmacSHA512(
-            secretKey,
-            listOf(
-                requestId,
-                version,
-                command,
-                tmnCode,
-                transactionType,
-                txnRef,
-                amount,
-                transactionNo,
-                transactionDate,
-                createBy,
-                createDate,
-                ipAddr,
-                orderInfo
-            ).joinToString("|")
-        )
-
-    private fun hmacSHA512(key: String, data: String): String =
-        Mac.getInstance("HmacSHA512").run {
-            init(SecretKeySpec(key.toByteArray(StandardCharsets.UTF_8), "HmacSHA512"))
-            doFinal(data.toByteArray(StandardCharsets.UTF_8))
-                .joinToString("") { "%02x".format(it) }
-        }
+    private fun hmacSHA512(key: String, data: String): String = hmac("SHA512", key, data)
 }
