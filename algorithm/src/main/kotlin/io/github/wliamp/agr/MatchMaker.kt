@@ -1,4 +1,4 @@
-package io.github.wliamp.agr.util
+package io.github.wliamp.agr
 
 import io.github.wliamp.agr.data.Space
 import io.github.wliamp.agr.data.Target
