@@ -1,4 +1,4 @@
-package io.github.wliamp.algorithm.data
+package io.github.wliamp.agr.data
 
 interface ICriteria {
     fun matches(other: ICriteria): Boolean

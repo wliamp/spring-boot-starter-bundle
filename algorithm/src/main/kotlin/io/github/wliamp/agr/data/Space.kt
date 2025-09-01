@@ -1,4 +1,4 @@
-package io.github.wliamp.algorithm.data
+package io.github.wliamp.agr.data
 
 data class Space(
     val id: String,

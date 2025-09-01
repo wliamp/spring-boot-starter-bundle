@@ -1,6 +1,6 @@
-package io.github.wliamp.algorithm.config
+package io.github.wliamp.agr.config
 
-import io.github.wliamp.algorithm.util.MatchMaker
+import io.github.wliamp.agr.util.MatchMaker
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean

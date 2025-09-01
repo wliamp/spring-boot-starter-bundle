@@ -1,7 +1,7 @@
-package io.github.wliamp.algorithm.util
+package io.github.wliamp.agr.util
 
-import io.github.wliamp.algorithm.data.Space
-import io.github.wliamp.algorithm.data.Target
+import io.github.wliamp.agr.data.Space
+import io.github.wliamp.agr.data.Target
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.concurrent.CopyOnWriteArrayList
@@ -35,15 +35,15 @@ class MatchMaker {
                     ).also { spaces += it }
                 })
 
-    private fun matchTargets(spaceTemplate: Space): Flux<Space> = getTargets().flatMap {
-        target ->
-        findOrCreateSpaceForTarget(target, spaceTemplate)
-            .flatMap { space ->
-                space.takeIf { it.addTarget(target) }
-                    ?.let { removeTarget(target).thenReturn(it) }
-                    ?: Mono.just(space)
-            }
-    }
+    private fun matchTargets(spaceTemplate: Space): Flux<Space> =
+        getTargets().flatMap { target ->
+            findOrCreateSpaceForTarget(target, spaceTemplate)
+                .flatMap { space ->
+                    space.takeIf { it.addTarget(target) }
+                        ?.let { removeTarget(target).thenReturn(it) }
+                        ?: Mono.just(space)
+                }
+        }
 
     fun enqueue(target: Target, spaceTemplate: Space): Mono<Space> =
         addTarget(target)
