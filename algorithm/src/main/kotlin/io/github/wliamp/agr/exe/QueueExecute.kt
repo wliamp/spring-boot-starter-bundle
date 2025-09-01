@@ -1,4 +1,4 @@
-package io.github.wliamp.agr
+package io.github.wliamp.agr.exe
 
 import io.github.wliamp.agr.data.Space
 import io.github.wliamp.agr.data.Target
@@ -6,24 +6,27 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.concurrent.CopyOnWriteArrayList
 
-class MatchMaker {
+class QueueExecute {
     private val enqueueTargets = CopyOnWriteArrayList<Target>()
     private val spaces = CopyOnWriteArrayList<Space>()
 
-    private fun addTarget(target: Target): Mono<Target> = Mono.fromCallable {
-        enqueueTargets += target;
-        target
-    }
+    fun addTarget(target: Target): Mono<Target> =
+        Mono.fromCallable {
+            enqueueTargets += target
+            target
+        }
 
-    private fun removeTarget(target: Target): Mono<Void> = Mono.fromRunnable {
-        enqueueTargets -= target
-    }
+    private fun removeTarget(target: Target): Mono<Void> =
+        Mono.fromRunnable {
+            enqueueTargets -= target
+        }
 
-    private fun getTargets(): Flux<Target> = Flux.fromIterable(enqueueTargets)
+    private fun getTargets(): Flux<Target> =
+        Flux.fromIterable(enqueueTargets)
 
     private fun findOrCreateSpaceForTarget(target: Target, spaceTemplate: Space): Mono<Space> =
         Flux.fromIterable(spaces)
-            .filter { it.canJoin(target) }
+            .flatMap { space -> space.canJoin(target).filter { it }.map { space } }
             .next()
             .switchIfEmpty(
                 Mono.fromCallable {
@@ -33,20 +36,20 @@ class MatchMaker {
                         maxJoins = spaceTemplate.maxJoins,
                         _targets = mutableListOf()
                     ).also { spaces += it }
-                })
+                }
+            )
 
-    private fun matchTargets(spaceTemplate: Space): Flux<Space> =
+    fun matchTargets(spaceTemplate: Space): Flux<Space> =
         getTargets().flatMap { target ->
             findOrCreateSpaceForTarget(target, spaceTemplate)
                 .flatMap { space ->
-                    space.takeIf { it.addTarget(target) }
-                        ?.let { removeTarget(target).thenReturn(it) }
-                        ?: Mono.just(space)
+                    space.addTarget(target).flatMap { added ->
+                        when {
+                            added -> removeTarget(target).thenReturn(space)
+                            else -> Mono.just(space)
+                        }
+                    }
                 }
         }
-
-    fun enqueue(target: Target, spaceTemplate: Space): Mono<Space> =
-        addTarget(target)
-            .thenMany(matchTargets(spaceTemplate))
-            .last()
 }
+

@@ -1,6 +1,7 @@
 package io.github.wliamp.agr.config
 
-import io.github.wliamp.agr.MatchMaker
+import io.github.wliamp.agr.Matcher
+import io.github.wliamp.agr.exe.QueueExecute
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -9,5 +10,5 @@ import org.springframework.context.annotation.Bean
 class AlgorithmAutoConfig {
     @Bean
     @ConditionalOnMissingBean
-    fun matchMaker(): MatchMaker = MatchMaker()
+    fun matchMaker(queue: QueueExecute): Matcher = Matcher(queue)
 }
