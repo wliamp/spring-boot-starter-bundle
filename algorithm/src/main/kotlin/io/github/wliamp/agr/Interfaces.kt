@@ -1,4 +1,4 @@
-package io.github.wliamp.agr.impl
+package io.github.wliamp.agr
 
 import reactor.core.publisher.Mono
 

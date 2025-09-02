@@ -1,10 +1,9 @@
-package io.github.wliamp.agr.impl
+package io.github.wliamp.agr
 
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 object Criteria {
-
     /**
      * Creates an equality criterion.
      *

@@ -1,7 +1,5 @@
-package io.github.wliamp.agr.data
+package io.github.wliamp.agr
 
-import io.github.wliamp.agr.impl.Criteria
-import io.github.wliamp.agr.impl.ICriteria
 import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -120,5 +118,3 @@ class ReactiveQueue<T : Any> {
     fun clear(): Mono<Void> =
         Mono.fromRunnable { queue.clear() }
 }
-
-
