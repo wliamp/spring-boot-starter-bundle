@@ -9,5 +9,5 @@ import org.springframework.context.annotation.Bean
 internal class AlgorithmAutoConfig {
     @Bean
     @ConditionalOnMissingBean
-    fun reactiveQueue(): ReactiveQueue<Any> = ReactiveQueue()
+    fun q(): ReactiveQueue<Any> = ReactiveQueue()
 }
