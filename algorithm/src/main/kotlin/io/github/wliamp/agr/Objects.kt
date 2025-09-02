@@ -26,23 +26,23 @@ object Criteria {
         RangeCriteria(selector, min, max)
 
     /**
-     * Creates a "greater than" criterion.
+     * Creates a "greater than" criterion for a property of T.
      *
-     * @param selector a function to extract the comparable value from the target
-     * @param threshold the value that the selected value must exceed
-     * @return an ICriteria that matches when the selected value is greater than the threshold
+     * @param selector a function to extract a comparable property (V) from the target object (T)
+     * @param threshold the value that the selected property must exceed
+     * @return an ICriteria that matches when the selected property is greater than the threshold
      */
-    fun <T : Comparable<T>> greaterThan(selector: (T) -> T, threshold: T): ICriteria<T> =
+    fun <T, V : Comparable<V>> greaterThan(selector: (T) -> V, threshold: V): ICriteria<T> =
         GreaterThanCriteria(selector, threshold)
 
     /**
-     * Creates a "less than" criterion.
+     * Creates a "less than" criterion for a property of T.
      *
-     * @param selector a function to extract the comparable value from the target
-     * @param threshold the value that the selected value must be below
-     * @return an ICriteria that matches when the selected value is less than the threshold
+     * @param selector a function to extract a comparable property (V) from the target object (T)
+     * @param threshold the value that the selected property must be below
+     * @return an ICriteria that matches when the selected property is less than the threshold
      */
-    fun <T : Comparable<T>> lessThan(selector: (T) -> T, threshold: T): ICriteria<T> =
+    fun <T, V : Comparable<V>> lessThan(selector: (T) -> V, threshold: V): ICriteria<T> =
         LessThanCriteria(selector, threshold)
 
     /**

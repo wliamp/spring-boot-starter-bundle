@@ -16,23 +16,20 @@ internal class RangeCriteria<T : Comparable<T>>(
     private val max: T
 ) : ICriteria<T> {
     override fun matches(target: T): Mono<Boolean> =
-        Mono.fromSupplier {
-            val value = selector(target)
-            value in min..max
-        }
+        Mono.fromSupplier { selector(target) in min..max }
 }
 
-internal class GreaterThanCriteria<T : Comparable<T>>(
-    private val selector: (T) -> T,
-    private val threshold: T
+internal class GreaterThanCriteria<T, V : Comparable<V>>(
+    private val selector: (T) -> V,
+    private val threshold: V
 ) : ICriteria<T> {
     override fun matches(target: T): Mono<Boolean> =
         Mono.fromSupplier { selector(target) > threshold }
 }
 
-internal class LessThanCriteria<T : Comparable<T>>(
-    private val selector: (T) -> T,
-    private val threshold: T
+internal class LessThanCriteria<T, V : Comparable<V>>(
+    private val selector: (T) -> V,
+    private val threshold: V
 ) : ICriteria<T> {
     override fun matches(target: T): Mono<Boolean> =
         Mono.fromSupplier { selector(target) < threshold }
@@ -43,7 +40,7 @@ internal class ContainsCriteria<T, E>(
     private val expected: E
 ) : ICriteria<T> {
     override fun matches(target: T): Mono<Boolean> =
-        Mono.fromSupplier { selector(target).contains(expected) }
+        Mono.fromSupplier { expected in selector(target) }
 }
 
 internal class StartsWithCriteria<T>(
