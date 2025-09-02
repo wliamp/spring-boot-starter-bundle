@@ -1,13 +1,12 @@
-package io.github.wliamp.algorithm.config
+package io.github.wliamp.agr
 
-import io.github.wliamp.algorithm.util.MatchMaker
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 
 @AutoConfiguration
-class AlgorithmAutoConfig {
+internal class AutoConfig {
     @Bean
     @ConditionalOnMissingBean
-    fun matchMaker(): MatchMaker = MatchMaker()
+    fun q(): ReactiveQueue<Any> = ReactiveQueue()
 }
