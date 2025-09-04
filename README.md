@@ -1,12 +1,16 @@
-# 🔧 Spring Boot Starter Library
+# 🔧 Spring Boot Starter Bundle
 
-This repository contains modular Spring Boot starter libraries designed for backend service development, learning, and experimentation.
+This repository provides modular Spring Boot starter libraries for building scalable and secure backend services, designed for production-ready integration and extensibility.
 
-## 📁 Projects
+## 📁 Starters
 
-- [Game Logic Starter](starter-algorithm) – Stateless service for handling core game logic, including player actions and in-game event processing, independent of session state.
+- [Reactive Algorithm](./algorithm) – Provides a stateless foundation for implementing and composing core algorithms in a reactive style. Designed to integrate with various data structures, supporting asynchronous processing, extensibility, and reuse across different domains.
+  
+- [Reactive Payment Provider](./provider-payment) – Modular integration layer for connecting with external payment gateways. Supports asynchronous request handling, secure transaction flow, and unified abstraction across multiple providers.
 
-- [Token Handler Starter](./starter-token) – Provides token generation, validation, and lifecycle management for secure inter-service communication.
+- [Reactive Verify Provider](./provider-verify) – Service for verifying third-party authentication and identity providers (e.g., Google, Facebook, phone OTP), ensures secure validation before issuing tokens or granting access.
+
+- [Reactive Token](./token) – Provides token generation, validation, and lifecycle management for secure inter-service communication.
   
 Each module is independently runnable and documented in its own README.md file.
 
