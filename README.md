@@ -22,11 +22,11 @@ If you’d like to contribute or share your code, **do not commit directly to 'm
 
 Please create a new branch using the allowed proper prefixes: **feature/** , **bugfix/** , **hotfix/** , **dev/** , **release/**
 
-#### ⚠️ If you don’t use a proper prefix, your branch might not be protected and could be modified by others
+**⚠️ If you don’t use a proper prefix, your branch might not be protected and could be modified by others**
 
 Then open a Pull Request (PR) to merge into 'main'
 
-#### ➡️ All changes will be reviewed before merging, use meaningful branch names and commit messages
+**➡️ All changes will be reviewed before merging, use meaningful branch names and commit messages**
 
 ---
 
