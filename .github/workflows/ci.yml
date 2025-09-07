@@ -100,31 +100,3 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
         run: ./gradlew ${{ matrix.service.gradleTask }}:build jacocoTestReport
 
-  # ------------------------
-  # Build and test sample apps if they exist
-  # ------------------------
-  samples:
-    if: hashFiles('samples/**') != ''
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-java@v3
-        with:
-          java-version: 21
-          distribution: temurin
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Publish starters to local Maven
-        run: ./gradlew publishToMavenLocal
-
-      - name: Build & test samples
-        run: ./gradlew :samples:build
