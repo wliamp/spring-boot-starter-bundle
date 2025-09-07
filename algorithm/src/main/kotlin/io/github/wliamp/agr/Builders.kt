@@ -40,6 +40,11 @@ class AndBuilder<T> {
                     .map { item }
             }
             .collectList()
+
+    companion object {
+        @JvmStatic
+        fun <T> builder(): AndBuilder<T> = AndBuilder()
+    }
 }
 
 class NotAndBuilder<T> {
@@ -67,5 +72,10 @@ class NotAndBuilder<T> {
                     .map { item }
             }
             .collectList()
+
+    companion object {
+        @JvmStatic
+        fun <T> builder(): NotAndBuilder<T> = NotAndBuilder()
+    }
 }
 

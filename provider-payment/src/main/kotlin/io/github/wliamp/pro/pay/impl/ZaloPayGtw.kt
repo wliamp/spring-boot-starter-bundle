@@ -38,9 +38,9 @@ internal class ZaloPayGtw internal constructor(
         }?.let { p ->
             val appId = p.appId
             val appUser = sys.appUser ?: ""
-            val appTransId = sys.appTransId
+            val appTransId = sys.appTransId ?: ""
             val appTime = System.currentTimeMillis().toString()
-            val amount = cus.amount
+            val amount = cus.amount ?: 0
             val item = cus.item ?: "[]"
             val description = cus.description ?: "Payment for the order #${appTransId}"
             val embedData = cus.embedData ?: "{}"
@@ -96,8 +96,8 @@ internal class ZaloPayGtw internal constructor(
                 "${formatDate(LocalDateTime.now(), "yyMMdd")}_" +
                     "${appId}_" +
                     generateCode((37 - "$appId".length).coerceAtLeast(0))
-            val zpTransId = sys.zpTransId
-            val amount = cus.amount
+            val zpTransId = sys.zpTransId ?: ""
+            val amount = cus.amount ?: 0
             val refundFeeAmount = sys.refundFeeAmount
             val timestamp = System.currentTimeMillis()
             val description = cus.description ?: "Refund for order ${sys.appTransId}"

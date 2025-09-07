@@ -28,13 +28,13 @@ data class VnPayCus(
     }
 
     class Builder {
-        private var vnpAmount: String = ""
+        private var vnpAmount: String? = null
         private var vnpBankCode: String? = null
         private var vnpCreateBy: String? = null
-        private var vnpIpAddr: String = ""
+        private var vnpIpAddr: String? = null
         private var vnpLocale: String? = null
-        private var vnpTransactionDate: String = ""
-        private var vnpTransactionNo: String = ""
+        private var vnpTransactionDate: String? = null
+        private var vnpTransactionNo: String? = null
         private var vnpTransactionType: String? = null
         private var vnpBillMobile: String? = null
         private var vnpBillEmail: String? = null
@@ -52,14 +52,14 @@ data class VnPayCus(
         private var vnpInvTaxcode: String? = null
         private var vnpInvType: String? = null
 
-        fun vnpAmount(vnpAmount: String) = apply { this.vnpAmount = vnpAmount }
-        fun vnpBankCode(vnpBankCode: String) = apply { this.vnpBankCode = vnpBankCode }
-        fun vnpCreateBy(vnpCreateBy: String) = apply { this.vnpCreateBy = vnpCreateBy }
-        fun vnpIpAddr(vnpIpAddr: String) = apply { this.vnpIpAddr = vnpIpAddr }
-        fun vnpLocale(vnpLocale: String) = apply { this.vnpLocale = vnpLocale }
-        fun vnpTransactionDate(vnpTransactionDate: String) = apply { this.vnpTransactionDate = vnpTransactionDate }
-        fun vnpTransactionNo(vnpTransactionNo: String) = apply { this.vnpTransactionNo = vnpTransactionNo }
-        fun vnpTransactionType(vnpTransactionType: String) = apply { this.vnpTransactionType = vnpTransactionType }
+        fun vnpAmount(vnpAmount: String?) = apply { this.vnpAmount = vnpAmount }
+        fun vnpBankCode(vnpBankCode: String?) = apply { this.vnpBankCode = vnpBankCode }
+        fun vnpCreateBy(vnpCreateBy: String?) = apply { this.vnpCreateBy = vnpCreateBy }
+        fun vnpIpAddr(vnpIpAddr: String?) = apply { this.vnpIpAddr = vnpIpAddr }
+        fun vnpLocale(vnpLocale: String?) = apply { this.vnpLocale = vnpLocale }
+        fun vnpTransactionDate(vnpTransactionDate: String?) = apply { this.vnpTransactionDate = vnpTransactionDate }
+        fun vnpTransactionNo(vnpTransactionNo: String?) = apply { this.vnpTransactionNo = vnpTransactionNo }
+        fun vnpTransactionType(vnpTransactionType: String?) = apply { this.vnpTransactionType = vnpTransactionType }
         fun vnpBillMobile(vnpBillMobile: String?) = apply { this.vnpBillMobile = vnpBillMobile }
         fun vnpBillEmail(vnpBillEmail: String?) = apply { this.vnpBillEmail = vnpBillEmail }
         fun vnpBillFirstName(vnpBillFirstName: String?) = apply { this.vnpBillFirstName = vnpBillFirstName }

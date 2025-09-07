@@ -106,7 +106,7 @@ internal class VnPayGtw internal constructor(
             val amount = (cus.vnpAmount?.toInt()?.times(100)).toString()
             val transactionNo = sys.vnpTransactionNo ?: ""
             val transactionDate = formatDate(sys.vnpTransactionDate, pattern)
-            val createBy = sys.vnpCreateBy ?: "system"
+            val createBy = sys.vnpCreateBy ?: ""
             val createDate = formatDate(LocalDateTime.now(), pattern)
             val ipAddr = sys.vnpIpAddr ?: "127.0.0.1"
             val orderInfo = sys.vnpOrderInfo ?: "Refund order $txnRef"
