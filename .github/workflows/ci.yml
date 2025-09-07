@@ -44,22 +44,22 @@ jobs:
           starters=()
 
           if [[ "${{ steps.filter.outputs.all }}" == "true" ]]; then
-            starters+=('{"service":"all","gradleTask":":bundle","reportPath":"bundle/build/reports"}')
+            starters+=('{"service":"all","gradleTask":":all","reportPath":"bundle/build/reports"}')
           fi
           if [[ "${{ steps.filter.outputs.agr }}" == "true" ]]; then
-            starters+=('{"service":"agr","gradleTask":":algorithm","reportPath":"algorithm/build/reports"}')
+            starters+=('{"service":"agr","gradleTask":":agr","reportPath":"algorithm/build/reports"}')
           fi
           if [[ "${{ steps.filter.outputs.pro }}" == "true" ]]; then
-            starters+=('{"service":"pro","gradleTask":":provider","reportPath":"provider/build/reports"}')
+            starters+=('{"service":"pro","gradleTask":":pro","reportPath":"provider/build/reports"}')
           fi
           if [[ "${{ steps.filter.outputs.pro-pay }}" == "true" ]]; then
-            starters+=('{"service":"pro-pay","gradleTask":":provider-payment","reportPath":"provider-payment/build/reports"}')
+            starters+=('{"service":"pro-pay","gradleTask":":pro-pay","reportPath":"provider-payment/build/reports"}')
           fi
           if [[ "${{ steps.filter.outputs.pro-vrf }}" == "true" ]]; then
-            starters+=('{"service":"pro-vrf","gradleTask":":provider-verify","reportPath":"provider-verify/build/reports"}')
+            starters+=('{"service":"pro-vrf","gradleTask":":pro-vrf","reportPath":"provider-verify/build/reports"}')
           fi
           if [[ "${{ steps.filter.outputs.tk }}" == "true" ]]; then
-            starters+=('{"service":"tk","gradleTask":":token","reportPath":"token/build/reports"}')
+            starters+=('{"service":"tk","gradleTask":":tk","reportPath":"token/build/reports"}')
           fi
 
           echo "matrix=$(jq -c -n --argjson s "[${starters[*]}]" '{include: $s}')" >> $GITHUB_OUTPUT
@@ -72,15 +72,13 @@ jobs:
     if: needs.setup.outputs.matrix != '{"include":[]}'
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        java: [17, 21] # Test against multiple JDKs
-        service: ${{ fromJson(needs.setup.outputs.matrix).include }}
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v3
         with:
-          java-version: ${{ matrix.java }}
+          java-version: 21
           distribution: temurin
 
       - uses: actions/cache@v4
@@ -92,11 +90,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Run static checks (Checkstyle/Spotbugs)
-        run: ./gradlew ${{ matrix.service.gradleTask }}:check
+        run: ./gradlew ${{ matrix.gradleTask }}:check
 
       - name: Run tests + coverage
         env:
           SPRING_PROFILES_ACTIVE: test
-        run: ./gradlew ${{ matrix.service.gradleTask }}:build jacocoTestReport
+        run: ./gradlew ${{ matrix.gradleTask }}:build jacocoTestReport
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-test-report
+          path: ${{ matrix.reportPath }}/tests/test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-coverage-report
+          path: ${{ matrix.reportPath }}/jacoco/test/html
