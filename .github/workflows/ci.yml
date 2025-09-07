@@ -1,0 +1,93 @@
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: ["dev"]          # Trigger on push to dev branch
+  pull_request:
+    branches: ["dev"]          # Trigger on PR targeting dev branch
+
+jobs:
+  # ------------------------
+  # Detect which services have changed and build a matrix
+  # ------------------------
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4  # Checkout the repository source code
+
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |             # Define path filters for each service
+            cmc:
+              - 'communication/**'
+            odr-cko:
+              - 'order-lifecycle/checkout/**'
+            odr-pay:
+              - 'order-lifecycle/payment/**'
+
+      - id: set-matrix
+        run: |
+        # Build a dynamic JSON matrix of services that changed
+          services=()
+
+          if [[ "${{ steps.filter.outputs.cmc }}" == "true" ]]; then
+            services+=('{"service":"cmc","gradleTask":":cmc","reportPath":"cmc/build/reports"}')
+          fi
+          if [[ "${{ steps.filter.outputs.odr-cko }}" == "true" ]]; then
+            services+=('{"service":"odr-cko","gradleTask":":odr:cko","reportPath":"order-lifecycle/checkout/build/reports"}')
+          fi
+          if [[ "${{ steps.filter.outputs.odr-pay }}" == "true" ]]; then
+            services+=('{"service":"odr-pay","gradleTask":":odr:pay","reportPath":"order-lifecycle/payment/build/reports"}')
+          fi
+
+        # Export the matrix as job output
+          echo "matrix=$(jq -c -n --argjson s "[${services[*]}]" '{include: $s}')" >> $GITHUB_OUTPUT
+
+  # ------------------------
+  # Run static checks, tests, build, and coverage for each service
+  # ------------------------
+  test:
+    needs: setup
+    if: needs.setup.outputs.matrix != '{"include":[]}'   # Skip if no service has changed
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }} # Execute once per changed service
+    steps:
+      - uses: actions/checkout@v4  # Checkout source code for the job
+
+      - uses: actions/setup-java@v3 # Set up JDK 21 (Temurin distribution)
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - uses: actions/cache@v4      # Cache Gradle dependencies to speed up builds
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run static checks (Checkstyle/Spotbugs)
+        run: ./gradlew ${{ matrix.gradleTask }}:check
+
+      - name: Run tests + build + coverage
+        env:
+          SPRING_PROFILES_ACTIVE: test  # Activate test profile for Spring Boot
+        run: ./gradlew ${{ matrix.gradleTask }}:clean build jacocoTestReport
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-test-report      # Upload test reports
+          path: ${{ matrix.reportPath }}/tests/test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-coverage-report  # Upload code coverage reports
+          path: ${{ matrix.reportPath }}/jacoco/test/html
