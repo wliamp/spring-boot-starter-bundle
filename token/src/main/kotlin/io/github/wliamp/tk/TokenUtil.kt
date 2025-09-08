@@ -1,7 +1,5 @@
-package io.github.wliamp.token.util
+package io.github.wliamp.tk
 
-import io.github.wliamp.token.data.Token
-import io.github.wliamp.token.data.Type
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoder
@@ -99,4 +97,23 @@ class TokenUtil(
                 .filterKeys { it !in setOf("iat", "exp", "nbf", "sub", "type") }
             issue(subject, type, expiresInSeconds, preserved)
         }
+}
+
+@Component
+class TokenUtilWrapper(private val tokenUtil: TokenUtil) {
+    fun issue(subject: String): Mono<String> {
+        return tokenUtil.issue(subject)
+    }
+
+    fun issue(subject: String, type: Type): Mono<String> {
+        return tokenUtil.issue(subject, type)
+    }
+
+    fun issue(subject: String, type: Type, exp: Long): Mono<String> {
+        return tokenUtil.issue(subject, type, exp)
+    }
+
+    fun issue(subject: String, type: Type, exp: Long, extraClaims: Map<String, Any>): Mono<String> {
+        return tokenUtil.issue(subject, type, exp, extraClaims)
+    }
 }

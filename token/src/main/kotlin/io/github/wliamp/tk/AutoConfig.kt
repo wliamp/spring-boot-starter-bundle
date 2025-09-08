@@ -1,11 +1,7 @@
-package io.github.wliamp.token.config
+package io.github.wliamp.tk
 
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
-import io.github.wliamp.token.data.EnvSecretLoader
-import io.github.wliamp.token.data.KeySetManager
-import io.github.wliamp.token.data.SecretLoader
-import io.github.wliamp.token.util.TokenUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -17,9 +13,9 @@ import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 
 @AutoConfiguration
-@EnableConfigurationProperties(TokenProperties::class)
-class TokenAutoConfig(
-    private val props: TokenProperties,
+@EnableConfigurationProperties(Properties::class)
+class AutoConfig(
+    private val props: Properties,
     @Value("\${spring.application.name}") private val applicationName: String
 ) {
     @Bean
@@ -44,11 +40,6 @@ class TokenAutoConfig(
     fun tokenUtil(
         jwtEncoder: JwtEncoder, jwtDecoder: ReactiveJwtDecoder
     ): TokenUtil = TokenUtil(
-        jwtEncoder = jwtEncoder,
-        jwtDecoder = jwtDecoder,
-        defaultExpireSeconds = props.expireSeconds,
-        defaultClaims = props.defaultClaims,
-        applicationName = applicationName
+        jwtEncoder, jwtDecoder, props.expireSeconds, props.defaultClaims, applicationName
     )
 }
-

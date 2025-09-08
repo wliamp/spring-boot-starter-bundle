@@ -1,9 +1,9 @@
-package io.github.wliamp.token.config
+package io.github.wliamp.tk
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "token")
-data class TokenProperties(
+data class Properties(
     var backend: String = "ENV",
     var envVar: String = "STARTER_TOKEN_PRIVATE_JWKS_JSON",
     var reloadIntervalSeconds: Long = 300,
