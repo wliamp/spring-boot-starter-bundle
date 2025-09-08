@@ -1,10 +1,29 @@
-package io.github.wliamp.pro.pay.sys
+package io.github.wliamp.pro.pay
 
-data class AuthorizeNetSys(
+data class AuthorizeNetClientData(
+    val amount: String?,
+) : OClient() {
+    companion object {
+        @JvmStatic
+        fun builder() = Builder()
+    }
+
+    class Builder {
+        private var amount: String? = null
+
+        fun amount(amount: String?) = apply { this.amount = amount }
+
+        fun build() = AuthorizeNetClientData(
+            amount
+        )
+    }
+}
+
+data class AuthorizeNetSystemData(
     val description: String?,
     val orderId: String?,
     val refTransId: String?,
-) : OSys() {
+) : OSystem() {
     companion object {
         @JvmStatic
         fun builder() = Builder()
@@ -19,7 +38,7 @@ data class AuthorizeNetSys(
         fun orderId(orderId: String?) = apply { this.orderId = orderId }
         fun refTransId(refTransId: String?) = apply { this.refTransId = refTransId }
 
-        fun build() = AuthorizeNetSys(
+        fun build() = AuthorizeNetSystemData(
             description,
             orderId,
             refTransId

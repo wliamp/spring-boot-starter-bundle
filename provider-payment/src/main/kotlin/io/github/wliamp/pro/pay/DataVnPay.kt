@@ -1,6 +1,6 @@
-package io.github.wliamp.pro.pay.cus
+package io.github.wliamp.pro.pay
 
-data class VnPayCus(
+data class VnPayClientData(
     val vnpAmount: String?,
     val vnpBankCode: String?,
     val vnpCreateBy: String?,
@@ -21,7 +21,7 @@ data class VnPayCus(
     val vnpInvCompany: String?,
     val vnpInvTaxcode: String?,
     val vnpInvType: String?
-) : OCus() {
+) : OClient() {
     companion object {
         @JvmStatic
         fun builder() = Builder()
@@ -76,12 +76,60 @@ data class VnPayCus(
         fun vnpInvTaxcode(vnpInvTaxcode: String?) = apply { this.vnpInvTaxcode = vnpInvTaxcode }
         fun vnpInvType(vnpInvType: String?) = apply { this.vnpInvType = vnpInvType }
 
-        fun build() = VnPayCus(
+        fun build() = VnPayClientData(
             vnpAmount, vnpBankCode, vnpCreateBy, vnpIpAddr,
             vnpLocale, vnpBillMobile, vnpBillEmail, vnpBillFirstName,
             vnpBillLastName, vnpBillAddress, vnpBillCity, vnpBillCountry,
             vnpBillState, vnpInvPhone, vnpInvEmail, vnpInvCustomer,
             vnpInvAddress, vnpInvCompany, vnpInvTaxcode, vnpInvType
+        )
+    }
+}
+
+data class VnPaySystemData(
+    val vnpCreateBy: String?,
+    val vnpIpAddr: String?,
+    val vnpOrderInfo: String?,
+    val vnpOrderType: String?,
+    val vnpRequestId: String?,
+    val vnpTransactionDate: String?,
+    val vnpTransactionNo: String?,
+    val vnpTransactionType: String?,
+    val vnpTxnRef: String?
+
+) : OSystem() {
+    companion object {
+        @JvmStatic
+        fun builder() = Builder()
+    }
+
+    class Builder {
+        private var vnpCreateBy: String? = null
+        private var vnpIpAddr: String? = null
+        private var vnpOrderInfo: String? = null
+        private var vnpOrderType: String? = null
+        private var vnpRequestId: String? = null
+        private var vnpTransactionDate: String? = null
+        private var vnpTransactionNo: String? = null
+        private var vnpTransactionType: String? = null
+        private var vnpTxnRef: String? = null
+
+        fun vnpCreateBy(vnpCreateBy: String?) = apply { this.vnpCreateBy = vnpCreateBy }
+        fun vnpIpAddr(vnpIpAddr: String?) = apply { this.vnpIpAddr = vnpIpAddr }
+        fun vnpOrderInfo(vnpOrderInfo: String?) = apply { this.vnpOrderInfo = vnpOrderInfo }
+        fun vnpOrderType(vnpOrderType: String?) = apply { this.vnpOrderType = vnpOrderType }
+        fun vnpRequestId(vnpRequestId: String?) = apply { this.vnpRequestId = vnpRequestId }
+        fun vnpTransactionDate(vnpTransactionDate: String?) = apply { this.vnpTransactionDate = vnpTransactionDate }
+        fun vnpTransactionNo(vnpTransactionNo: String?) = apply { this.vnpTransactionNo = vnpTransactionNo }
+        fun vnpTransactionType(vnpTransactionType: String?) = apply { this.vnpTransactionType = vnpTransactionType }
+        fun vnpTxnRef(vnpTxnRef: String?) = apply { this.vnpTxnRef = vnpTxnRef }
+
+        fun build() = VnPaySystemData(
+            vnpCreateBy, vnpIpAddr,
+            vnpOrderInfo, vnpOrderType,
+            vnpRequestId, vnpTransactionDate,
+            vnpTransactionNo, vnpTransactionType,
+            vnpTxnRef
         )
     }
 }

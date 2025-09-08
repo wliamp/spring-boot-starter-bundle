@@ -1,49 +1,43 @@
-package io.github.wliamp.pro.pay.impl
+package io.github.wliamp.pro.pay
 
-import io.github.wliamp.pro.pay.config.PaymentProviderProps
-import io.github.wliamp.pro.pay.cus.ZaloPayCus
-import io.github.wliamp.pro.pay.sys.ZaloPaySys
-import io.github.wliamp.pro.pay.util.formatDate
-import io.github.wliamp.pro.pay.util.generateCode
-import io.github.wliamp.pro.pay.util.hmac
-import io.github.wliamp.pro.pay.util.optional
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
+import kotlin.collections.get
 
-internal class ZaloPayGtw internal constructor(
-    private val props: PaymentProviderProps.ZaloPayProps,
+internal class IZaloPay internal constructor(
+    private val props: Properties.ZaloPayProps,
     private val webClient: WebClient
-) : IGtw<ZaloPayCus, ZaloPaySys> {
+) : IPay<ZaloPayClientData, ZaloPaySystemData> {
     private val provider = "zaloPay"
 
     @Deprecated(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun authorize(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
+    override fun authorize(client: ZaloPayClientData, system: ZaloPaySystemData): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay AUTHORIZE unsupported"))
 
     @Deprecated(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun capture(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
+    override fun capture(client: ZaloPayClientData, system: ZaloPaySystemData): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay CAPTURE unsupported"))
 
-    override fun sale(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
+    override fun sale(client: ZaloPayClientData, system: ZaloPaySystemData): Mono<Any> =
         props.takeIf {
             (it.appId > 0) &&
                 it.key1.isNotBlank()
         }?.let { p ->
             val appId = p.appId
-            val appUser = sys.appUser ?: ""
-            val appTransId = sys.appTransId ?: ""
+            val appUser = system.appUser ?: ""
+            val appTransId = system.appTransId ?: ""
             val appTime = System.currentTimeMillis().toString()
-            val amount = cus.amount ?: 0
-            val item = cus.item ?: "[]"
-            val description = cus.description ?: "Payment for the order #${appTransId}"
-            val embedData = cus.embedData ?: "{}"
+            val amount = client.amount ?: 0
+            val item = client.item ?: "[]"
+            val description = client.description ?: "Payment for the order #${appTransId}"
+            val embedData = client.embedData ?: "{}"
             val body = mutableMapOf<String, Any>(
                 "app_id" to appId,
                 "app_user" to appUser,
@@ -56,10 +50,10 @@ internal class ZaloPayGtw internal constructor(
                 "embed_data" to embedData,
                 "mac" to hmacSHA256(p.key1, listOf(appId, appTransId, appUser, amount, appTime, embedData, item).joinToString("|"))
             )
-            body.optional("bank_code", cus.bankCode)
-            body.optional("device_info", cus.deviceInfo)
+            body.optional("bank_code", client.bankCode)
+            body.optional("device_info", client.deviceInfo)
             body.optional("sub_app_id", p.subAppId)
-            body.optional("callback_url", sys.callbackUrl)
+            body.optional("callback_url", system.callbackUrl)
             webClient.post()
                 .uri("${p.baseUrl}${p.saleUri}")
                 .bodyValue(body)
@@ -85,7 +79,7 @@ internal class ZaloPayGtw internal constructor(
             )
         )
 
-    override fun refund(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
+    override fun refund(client: ZaloPayClientData, system: ZaloPaySystemData): Mono<Any> =
         props.takeIf {
             (it.appId > 0) &&
                 it.key1.isNotBlank()
@@ -96,11 +90,11 @@ internal class ZaloPayGtw internal constructor(
                 "${formatDate(LocalDateTime.now(), "yyMMdd")}_" +
                     "${appId}_" +
                     generateCode((37 - "$appId".length).coerceAtLeast(0))
-            val zpTransId = sys.zpTransId ?: ""
-            val amount = cus.amount ?: 0
-            val refundFeeAmount = sys.refundFeeAmount
+            val zpTransId = system.zpTransId ?: ""
+            val amount = client.amount ?: 0
+            val refundFeeAmount = system.refundFeeAmount
             val timestamp = System.currentTimeMillis()
-            val description = cus.description ?: "Refund for order ${sys.appTransId}"
+            val description = client.description ?: "Refund for order ${system.appTransId}"
             val body = mutableMapOf<String, Any>(
                 "m_refund_id" to mRefundId,
                 "app_id" to appId,
@@ -140,9 +134,8 @@ internal class ZaloPayGtw internal constructor(
         message = "Not supported by ZaloPay",
         level = DeprecationLevel.HIDDEN
     )
-    override fun void(cus: ZaloPayCus, sys: ZaloPaySys): Mono<Any> =
+    override fun void(client: ZaloPayClientData, system: ZaloPaySystemData): Mono<Any> =
         Mono.error(UnsupportedOperationException("ZaloPay VOID unsupported"))
 
     private fun hmacSHA256(key: String, data: String): String = hmac("SHA256", key, data)
 }
-

@@ -1,4 +1,4 @@
-package io.github.wliamp.pro.pay.util
+package io.github.wliamp.pro.pay
 
 import java.nio.charset.StandardCharsets
 import java.time.Instant
