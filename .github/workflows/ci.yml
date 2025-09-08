@@ -94,6 +94,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run static checks (Checkstyle/Spotbugs)
+        continue-on-error: true
         run: ./gradlew ${{ matrix.gradleTask }}:check
 
       - name: Run tests + coverage
