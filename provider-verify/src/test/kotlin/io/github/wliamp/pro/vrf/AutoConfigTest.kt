@@ -1,9 +1,5 @@
 package io.github.wliamp.pro.vrf
 
-import io.github.wliamp.pro.vrf.config.VerifyProviderAutoConfig
-import io.github.wliamp.pro.vrf.oauth.FacebookOauth
-import io.github.wliamp.pro.vrf.oauth.GoogleOauth
-import io.github.wliamp.pro.vrf.oauth.ZaloOauth
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.AutoConfigurations
@@ -12,7 +8,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 class AutoConfigTest {
 
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(VerifyProviderAutoConfig::class.java))
+        .withConfiguration(AutoConfigurations.of(AutoConfig::class.java))
 
     @Test
     fun `when all enabled then all beans created`() {
@@ -22,11 +18,11 @@ class AutoConfigTest {
                 "provider.oauth.google.enabled=true",
                 "provider.oauth.zalo.enabled=true"
             )
-            .run { ctx ->
-                assertThat(ctx).hasSingleBean(FacebookOauth::class.java)
-                assertThat(ctx).hasSingleBean(GoogleOauth::class.java)
-                assertThat(ctx).hasSingleBean(ZaloOauth::class.java)
-                assertThat(ctx).hasSingleBean(OauthProvider::class.java)
+            .run {
+                assertThat(it).hasSingleBean(IFacebook::class.java)
+                assertThat(it).hasSingleBean(IGoogle::class.java)
+                assertThat(it).hasSingleBean(IZalo::class.java)
+                assertThat(it).hasSingleBean(OauthProvider::class.java)
             }
     }
 
@@ -38,10 +34,10 @@ class AutoConfigTest {
                 "provider.oauth.google.enabled=true",
                 "provider.oauth.zalo.enabled=true"
             )
-            .run { ctx ->
-                assertThat(ctx).doesNotHaveBean(FacebookOauth::class.java)
-                assertThat(ctx).hasSingleBean(GoogleOauth::class.java)
-                assertThat(ctx).hasSingleBean(ZaloOauth::class.java)
+            .run {
+                assertThat(it).doesNotHaveBean(IFacebook::class.java)
+                assertThat(it).hasSingleBean(IGoogle::class.java)
+                assertThat(it).hasSingleBean(IZalo::class.java)
             }
     }
 
@@ -53,10 +49,10 @@ class AutoConfigTest {
                 "provider.oauth.google.enabled=false",
                 "provider.oauth.zalo.enabled=true"
             )
-            .run { ctx ->
-                assertThat(ctx).hasSingleBean(FacebookOauth::class.java)
-                assertThat(ctx).doesNotHaveBean(GoogleOauth::class.java)
-                assertThat(ctx).hasSingleBean(ZaloOauth::class.java)
+            .run {
+                assertThat(it).hasSingleBean(IFacebook::class.java)
+                assertThat(it).doesNotHaveBean(IGoogle::class.java)
+                assertThat(it).hasSingleBean(IZalo::class.java)
             }
     }
 
@@ -68,10 +64,10 @@ class AutoConfigTest {
                 "provider.oauth.google.enabled=true",
                 "provider.oauth.zalo.enabled=false"
             )
-            .run { ctx ->
-                assertThat(ctx).hasSingleBean(FacebookOauth::class.java)
-                assertThat(ctx).hasSingleBean(GoogleOauth::class.java)
-                assertThat(ctx).doesNotHaveBean(ZaloOauth::class.java)
+            .run {
+                assertThat(it).hasSingleBean(IFacebook::class.java)
+                assertThat(it).hasSingleBean(IGoogle::class.java)
+                assertThat(it).doesNotHaveBean(IZalo::class.java)
             }
     }
 }
