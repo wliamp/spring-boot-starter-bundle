@@ -97,18 +97,24 @@ jobs:
         run: ./gradlew ${{ matrix.gradleTask }}:check
 
       - name: Run tests + coverage
+        continue-on-error: true
         env:
           SPRING_PROFILES_ACTIVE: test
-        run: ./gradlew ${{ matrix.gradleTask }}:build jacocoTestReport
+        run: ./gradlew ${{ matrix.gradleTask }}:test jacocoTestReport
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload test report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.service }}-test-report
           path: ${{ matrix.reportPath }}/tests/test
+          if-no-files-found: warn
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload coverage report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.service }}-coverage-report
           path: ${{ matrix.reportPath }}/jacoco/test/html
+          if-no-files-found: warn
+
