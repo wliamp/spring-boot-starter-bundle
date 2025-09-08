@@ -1,11 +1,17 @@
-package io.github.wliamp.token.data
+package io.github.wliamp.tk
 
 import java.time.Instant
 
-data class Token(
+data class Claim(
     val subject: String,
     val type: Type,
     val issuedAt: Instant,
     val expiration: Instant,
     val claims: Map<String, Any>
 )
+
+enum class Type {
+    ACCESS,
+    REFRESH,
+    SERVICE
+}

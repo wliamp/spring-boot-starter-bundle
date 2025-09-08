@@ -1,26 +1,23 @@
-package io.github.wliamp.token.config
+package io.github.wliamp.tk
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
-import io.github.wliamp.token.data.EnvSecretLoader
-import io.github.wliamp.token.data.KeySetManager
-import io.github.wliamp.token.data.SecretLoader
-import io.github.wliamp.token.util.TokenUtil
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.scheduling.TaskScheduler
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 
 @AutoConfiguration
-@EnableConfigurationProperties(TokenProperties::class)
-class TokenAutoConfig(
-    private val props: TokenProperties,
-    @Value("\${spring.application.name}") private val applicationName: String
+@EnableConfigurationProperties(Properties::class)
+class AutoConfig(
+    private val props: Properties
 ) {
     @Bean
     fun secretLoader(): SecretLoader = EnvSecretLoader(props)
@@ -40,15 +37,27 @@ class TokenAutoConfig(
         ).build()
 
     @Bean
+    @ConditionalOnMissingBean(TaskScheduler::class)
+    fun taskScheduler(): TaskScheduler =
+        ThreadPoolTaskScheduler().apply {
+            poolSize = 1
+            threadNamePrefix = "token-reloader-"
+            initialize()
+        }
+
+    @Bean
+    fun keySetManager(
+        loader: SecretLoader,
+        props: Properties,
+        objectMapper: ObjectMapper,
+        taskScheduler: TaskScheduler
+    ): KeySetManager = KeySetManager(loader, props, objectMapper, taskScheduler)
+
+    @Bean
     @ConditionalOnMissingBean
     fun tokenUtil(
         jwtEncoder: JwtEncoder, jwtDecoder: ReactiveJwtDecoder
     ): TokenUtil = TokenUtil(
-        jwtEncoder = jwtEncoder,
-        jwtDecoder = jwtDecoder,
-        defaultExpireSeconds = props.expireSeconds,
-        defaultClaims = props.defaultClaims,
-        applicationName = applicationName
+        jwtEncoder, jwtDecoder, props
     )
 }
-
