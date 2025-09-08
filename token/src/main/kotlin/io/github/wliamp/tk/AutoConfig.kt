@@ -2,7 +2,6 @@ package io.github.wliamp.tk
 
 import com.nimbusds.jose.jwk.source.JWKSource
 import com.nimbusds.jose.proc.SecurityContext
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -15,8 +14,7 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder
 @AutoConfiguration
 @EnableConfigurationProperties(Properties::class)
 class AutoConfig(
-    private val props: Properties,
-    @Value("\${spring.application.name}") private val applicationName: String
+    private val props: Properties
 ) {
     @Bean
     fun secretLoader(): SecretLoader = EnvSecretLoader(props)
@@ -40,6 +38,6 @@ class AutoConfig(
     fun tokenUtil(
         jwtEncoder: JwtEncoder, jwtDecoder: ReactiveJwtDecoder
     ): TokenUtil = TokenUtil(
-        jwtEncoder, jwtDecoder, props.expireSeconds, props.defaultClaims, applicationName
+        jwtEncoder, jwtDecoder, props
     )
 }

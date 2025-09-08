@@ -2,7 +2,7 @@ package io.github.wliamp.tk
 
 import java.time.Instant
 
-data class Token(
+data class Claim(
     val subject: String,
     val type: Type,
     val issuedAt: Instant,

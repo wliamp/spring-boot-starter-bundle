@@ -1,6 +1,5 @@
 package io.github.wliamp.tk
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoder
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
@@ -14,30 +13,24 @@ import java.time.Instant
 class TokenUtil(
     private val jwtEncoder: JwtEncoder,
     private val jwtDecoder: ReactiveJwtDecoder,
-    @Value("\${token.default-expire-seconds:3600}") private val defaultExpireSeconds: Long,
-    @Value("\${token.default-claims:}") private val defaultClaims: Map<String, Any>,
-    @Value("\${spring.application.name}") private val applicationName: String
+    private val props: Properties,
 ) {
-    private val issuer = applicationName
-
-    private val defaultClaimsWithApp = defaultClaims + mapOf("app" to issuer)
-
     @JvmOverloads
     fun issue(
         subject: String,
         type: Type = Type.ACCESS,
-        expiresInSeconds: Long = defaultExpireSeconds,
+        expiresInSeconds: Long = props.expireSeconds,
         extraClaims: Map<String, Any> = emptyMap()
     ): Mono<String> =
         Mono.fromCallable {
             val now = Instant.now()
             val claimsBuilder = JwtClaimsSet.builder()
-                .issuer(issuer)
+                .issuer(props.issuer)
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiresInSeconds))
                 .subject(subject)
                 .claim("type", type.name)
-            defaultClaimsWithApp.forEach { (k, v) -> claimsBuilder.claim(k, v) }
+            props.defaultClaims.forEach { (k, v) -> claimsBuilder.claim(k, v) }
             extraClaims.forEach { (k, v) -> claimsBuilder.claim(k, v) }
             jwtEncoder.encode(JwtEncoderParameters.from(claimsBuilder.build())).tokenValue
         }.subscribeOn(Schedulers.boundedElastic())
@@ -64,10 +57,10 @@ class TokenUtil(
         }
 
     /** Retrieve summarized information about the token */
-    fun tokenInfo(token: String): Mono<Token> =
+    fun tokenInfo(token: String): Mono<Claim> =
         jwtDecoder.decode(token).flatMap { jwt ->
             getType(token).map { type ->
-                Token(
+                Claim(
                     subject = jwt.claims["sub"]?.toString() ?: "",
                     type = type,
                     issuedAt = jwt.issuedAt ?: Instant.EPOCH,

@@ -8,6 +8,7 @@ data class Properties(
     var envVar: String = "STARTER_TOKEN_PRIVATE_JWKS_JSON",
     var reloadIntervalSeconds: Long = 300,
     var jwksPath: String = "/oauth2/jwks",
+    var issuer: String = "",
     var expireSeconds: Long = 3600,
     var defaultClaims: Map<String, Any> = emptyMap()
 )
