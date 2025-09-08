@@ -1,7 +1,5 @@
 package io.github.wliamp.pro.vrf
 
-import io.github.wliamp.pro.vrf.config.VerifyProviderAutoConfig
-import io.github.wliamp.pro.vrf.config.VerifyProviderProps
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.boot.autoconfigure.AutoConfigurations
@@ -10,7 +8,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 class PropsBindingTest {
 
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(VerifyProviderAutoConfig::class.java))
+        .withConfiguration(AutoConfigurations.of(AutoConfig::class.java))
 
     @Test
     fun `properties should bind correctly`() {
@@ -25,8 +23,8 @@ class PropsBindingTest {
                 "provider.oauth.zalo.base-url=https://custom.zalo",
                 "provider.oauth.zalo.fields=id,picture"
             )
-            .run { ctx ->
-                val props = ctx.getBean(VerifyProviderProps::class.java)
+            .run {
+                val props = it.getBean(Properties::class.java)
 
                 assertThat(props.facebook.baseUrl).isEqualTo("https://custom.fb")
                 assertThat(props.facebook.appId).isEqualTo("fb-app")
@@ -43,8 +41,8 @@ class PropsBindingTest {
 
     @Test
     fun `defaults should apply when no config provided`() {
-        baseRunner.run { ctx ->
-            val props = ctx.getBean(VerifyProviderProps::class.java)
+        baseRunner.run {
+            val props = it.getBean(Properties::class.java)
 
             assertThat(props.facebook.baseUrl).isEqualTo("https://graph.facebook.com")
             assertThat(props.google.baseUrl).isEqualTo("https://oauth2.googleapis.com/tokeninfo")
