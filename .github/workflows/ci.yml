@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: ["dev"]          # Trigger on push to dev branch
+    branches: ["dev"]
   pull_request:
-    branches: ["dev"]          # Trigger on PR targeting dev branch
+    branches: ["dev"]
 
 jobs:
   # ------------------------
@@ -94,11 +94,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run static checks (Checkstyle/Spotbugs)
-        continue-on-error: true
         run: ./gradlew ${{ matrix.gradleTask }}:check
 
       - name: Run tests + coverage
-        continue-on-error: true
         env:
           SPRING_PROFILES_ACTIVE: test
         run: ./gradlew ${{ matrix.gradleTask }}:test jacocoTestReport
@@ -118,4 +116,3 @@ jobs:
           name: ${{ matrix.service }}-coverage-report
           path: ${{ matrix.reportPath }}/jacoco/test/html
           if-no-files-found: warn
-
