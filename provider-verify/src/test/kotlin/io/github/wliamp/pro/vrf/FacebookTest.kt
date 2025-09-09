@@ -9,8 +9,10 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
     Properties.FacebookProps().apply {
         appId = "test-app"
         accessToken = "test-access-token"
-        baseUrl = baseUrl
+        baseUrl = ""
         fields = ""
+        vrfUri = "/debug_token"
+        infoUri = "/me"
     }
 }) {
     override fun buildProvider(props: Properties.FacebookProps, client: WebClient): IOauth =
@@ -57,7 +59,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
         val bad = Properties.FacebookProps().apply {
             appId = ""
             accessToken = "test-access-token"
-            baseUrl = "/debug"
+            baseUrl = ""
         }
         val f = IFacebook(bad, client)
 
@@ -107,7 +109,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "/debug_token?input_token=dummy-token&access_token=test-access-token",
+            "${props.vrfUri}?input_token=dummy-token&access_token=test-access-token",
             recorded.path
         )
     }
@@ -122,7 +124,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "/me?access_token=dummy-token",
+            "${props.infoUri}?access_token=dummy-token",
             recorded.path
         )
     }
@@ -134,6 +136,8 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
             accessToken = "test-access-token"
             baseUrl = props.baseUrl
             fields = "id,name"
+            vrfUri = props.vrfUri
+            infoUri = props.infoUri
         }
         val fb = IFacebook(customProps, client)
 
@@ -145,7 +149,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "/me?access_token=dummy-token&fields=id,name",
+            "${props.infoUri}?access_token=dummy-token&fields=id,name",
             recorded.path
         )
     }
