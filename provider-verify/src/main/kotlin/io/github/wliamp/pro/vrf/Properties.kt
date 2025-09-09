@@ -10,6 +10,8 @@ internal data class Properties(
 ) {
     data class FacebookProps(
         var baseUrl: String = "https://graph.facebook.com",
+        var vrfUri: String = "/debug_token",
+        var infoUri: String = "/me",
         var appId: String = "",
         var accessToken: String = "",
         var fields: String = ""

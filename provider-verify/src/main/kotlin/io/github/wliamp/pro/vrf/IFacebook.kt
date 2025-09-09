@@ -15,7 +15,7 @@ internal class IFacebook internal constructor(
             it.appId.isNotBlank() &&
                 it.accessToken.isNotBlank()
         }?.let { p ->
-            fetchPayload("${props.baseUrl}/debug_token?input_token=$token&access_token=${props.accessToken}")
+            fetchPayload("${p.baseUrl}${p.vrfUri}?input_token=$token&access_token=${p.accessToken}")
                 .map {
                     val data = it["data"] as? Map<*, *>
                         ?: throw OauthParseException(oauth, "Missing 'data' in response")
@@ -31,8 +31,8 @@ internal class IFacebook internal constructor(
     override fun getInfo(token: String): Mono<Map<String, Any>> =
         fetchPayload(
             props.fields.takeIf { it.isNotBlank() }
-                ?.let { "${props.baseUrl}/me?access_token=$token&fields=$it" }
-                ?: "${props.baseUrl}/me?access_token=$token"
+                ?.let { "${props.baseUrl}${props.infoUri}?access_token=$token&fields=$it" }
+                ?: "${props.baseUrl}${props.infoUri}?access_token=$token"
         )
 
     private fun fetchPayload(uri: String): Mono<Map<String, Any>> =
