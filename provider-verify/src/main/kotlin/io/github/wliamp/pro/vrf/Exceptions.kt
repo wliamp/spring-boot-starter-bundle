@@ -1,26 +1,34 @@
 package io.github.wliamp.pro.vrf
 
-internal sealed class GoogleOauthException(
+internal sealed class OauthException(
+    oauth: Oauth,
     message: String,
     cause: Throwable? = null
-) : RuntimeException(message, cause)
+) : RuntimeException("[$oauth] $message", cause)
 
-internal class GoogleConfigException(message: String) : GoogleOauthException(message)
+internal class OauthConfigException(
+    oauth: Oauth,
+    message: String
+) : OauthException(oauth, message)
 
-internal class GoogleHttpException(
+internal class OauthHttpException(
+    oauth: Oauth,
     status: Int,
     responseBody: String
-) : GoogleOauthException("HTTP $status: $responseBody")
+) : OauthException(oauth, "HTTP $status: $responseBody")
 
-internal class GoogleParseException(
+internal class OauthParseException(
+    oauth: Oauth,
     message: String,
     cause: Throwable? = null
-) : GoogleOauthException(message, cause)
+) : OauthException(oauth, message, cause)
 
-internal class GoogleNetworkException(
+internal class OauthNetworkException(
+    oauth: Oauth,
     cause: Throwable
-) : GoogleOauthException("Network error", cause)
+) : OauthException(oauth, "Network error", cause)
 
-internal class GoogleUnexpectedException(
+internal class OauthUnexpectedException(
+    oauth: Oauth,
     cause: Throwable
-) : GoogleOauthException("Unexpected error", cause)
+) : OauthException(oauth, "Unexpected error", cause)
