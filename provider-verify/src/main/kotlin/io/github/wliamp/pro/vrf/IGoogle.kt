@@ -42,7 +42,8 @@ internal class IGoogle internal constructor(
                 when (it) {
                     is GoogleOauthException -> it
                     is java.net.ConnectException,
-                    is java.net.SocketTimeoutException -> GoogleNetworkException(it)
+                    is java.net.SocketTimeoutException,
+                    is org.springframework.web.reactive.function.client.WebClientRequestException -> GoogleNetworkException(it)
 
                     is com.fasterxml.jackson.core.JsonProcessingException -> GoogleParseException("Invalid JSON", it)
                     else -> GoogleUnexpectedException(it)

@@ -5,51 +5,70 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.*
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
 import reactor.test.StepVerifier
+import io.netty.channel.ChannelOption
+import io.netty.handler.timeout.ReadTimeoutHandler
+import io.netty.handler.timeout.WriteTimeoutHandler
+import java.util.concurrent.TimeUnit
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GoogleTest {
+
     private lateinit var server: MockWebServer
     private lateinit var client: WebClient
     private lateinit var props: Properties.GoogleProps
     private lateinit var google: IGoogle
     private val mapper = ObjectMapper()
 
-    @BeforeEach
-    fun setup() {
+    @BeforeAll
+    fun beforeAll() {
         server = MockWebServer()
         server.start()
+    }
+
+    @AfterAll
+    fun afterAll() {
+        server.shutdown()
+    }
+
+    @BeforeEach
+    fun setup() {
         props = Properties.GoogleProps().apply {
             clientId = "test-client"
             baseUrl = server.url("/tokeninfo").toString()
         }
-        client = WebClient.builder().build()
+
+        val httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 200)
+            .doOnConnected { conn ->
+                conn.addHandlerLast(ReadTimeoutHandler(1, TimeUnit.SECONDS))
+                conn.addHandlerLast(WriteTimeoutHandler(1, TimeUnit.SECONDS))
+            }
+
+        client = WebClient.builder()
+            .clientConnector(ReactorClientHttpConnector(httpClient))
+            .build()
+
         google = IGoogle(props, client)
     }
 
-    @AfterEach
-    fun tearDown() {
-        server.shutdown()
-    }
-
-    // -----------------------
-    // helper function
-    // -----------------------
     private fun enqueueJson(body: Any, code: Int = 200) {
         server.enqueue(
             MockResponse()
                 .setResponseCode(code)
                 .setHeader("Content-Type", "application/json")
                 .setBody(mapper.writeValueAsString(body))
+                .setSocketPolicy(SocketPolicy.KEEP_OPEN)
         )
     }
 
-    // -----------------------
-    // tests
-    // -----------------------
     @Test
     fun `verify returns true when aud matches`() {
         enqueueJson(mapOf("aud" to "test-client"))
+
         StepVerifier.create(google.verify("dummy-token"))
             .expectNext(true)
             .verifyComplete()
@@ -58,6 +77,7 @@ class GoogleTest {
     @Test
     fun `verify returns false when aud mismatches`() {
         enqueueJson(mapOf("aud" to "other-client"))
+
         StepVerifier.create(google.verify("dummy-token"))
             .expectNext(false)
             .verifyComplete()
@@ -66,6 +86,7 @@ class GoogleTest {
     @Test
     fun `verify throws when aud missing`() {
         enqueueJson(mapOf("sub" to "123456"))
+
         StepVerifier.create(google.verify("dummy-token"))
             .expectError(GoogleParseException::class.java)
             .verify()
@@ -74,6 +95,7 @@ class GoogleTest {
     @Test
     fun `getInfo returns payload`() {
         enqueueJson(mapOf("aud" to "test-client", "email" to "user@example.com"))
+
         StepVerifier.create(google.getInfo("dummy-token"))
             .expectNextMatches { it["email"] == "user@example.com" }
             .verifyComplete()
@@ -86,6 +108,7 @@ class GoogleTest {
             baseUrl = server.url("/tokeninfo").toString()
         }
         val googleNoClient = IGoogle(propsNoClient, client)
+
         StepVerifier.create(googleNoClient.verify("dummy-token"))
             .expectError(GoogleConfigException::class.java)
             .verify()
@@ -99,6 +122,7 @@ class GoogleTest {
                 .setHeader("Content-Type", "application/json")
                 .setBody("""{"error":"Bad Request"}""")
         )
+
         StepVerifier.create(google.verify("dummy-token"))
             .expectError(GoogleHttpException::class.java)
             .verify()
@@ -108,7 +132,7 @@ class GoogleTest {
     fun `verify errors on network issue`() {
         server.enqueue(
             MockResponse()
-                .setSocketPolicy(SocketPolicy.DISCONNECT_AT_START)
+                .setSocketPolicy(SocketPolicy.NO_RESPONSE) // sẽ trigger timeout
         )
 
         StepVerifier.create(google.verify("dummy-token"))
@@ -124,6 +148,7 @@ class GoogleTest {
                 .setHeader("Content-Type", "application/json")
                 .setBody("not-a-json-object")
         )
+
         StepVerifier.create(google.getInfo("dummy-token"))
             .expectError(GoogleUnexpectedException::class.java)
             .verify()
