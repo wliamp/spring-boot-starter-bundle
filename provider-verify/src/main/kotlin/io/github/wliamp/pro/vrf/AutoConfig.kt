@@ -1,5 +1,6 @@
 package io.github.wliamp.pro.vrf
 
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -10,9 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient
 @AutoConfiguration
 @EnableConfigurationProperties(Properties::class)
 internal class AutoConfig private constructor(
-    private val facebookProps: Properties.FacebookProps,
-    private val googleProps: Properties.GoogleProps,
-    private val zaloProps: Properties.ZaloProps
+    private val props: Properties
 ) {
     @Bean
     @ConditionalOnProperty(
@@ -21,7 +20,7 @@ internal class AutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun fb(): IOauth = IFacebook(facebookProps, WebClient.builder().build())
+    fun fb(): IFacebook = IFacebook(props.facebook, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -30,7 +29,7 @@ internal class AutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun gg(): IOauth = IGoogle(googleProps, WebClient.builder().build())
+    fun gg(): IGoogle = IGoogle(props.google, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -39,17 +38,17 @@ internal class AutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zl(): IOauth = IZalo(zaloProps, WebClient.builder().build())
+    fun zl(): IZalo = IZalo(props.zalo, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun vrf(
-        fb: IOauth,
-        gg: IOauth,
-        zl: IOauth
+        fb: ObjectProvider<IFacebook>,
+        gg: ObjectProvider<IGoogle>,
+        zl: ObjectProvider<IZalo>
     ): OauthProvider = OauthProvider(
-        fb,
-        gg,
-        zl
+        fb.ifAvailable,
+        gg.ifAvailable,
+        zl.ifAvailable
     )
 }
