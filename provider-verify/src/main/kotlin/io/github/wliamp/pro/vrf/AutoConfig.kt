@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient
 internal class AutoConfig private constructor(
     private val props: Properties
 ) {
-    @Bean("fb")
+    @Bean
     @ConditionalOnProperty(
         prefix = "provider.oauth.facebook",
         name = ["enabled"],
