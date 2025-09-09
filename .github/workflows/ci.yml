@@ -116,3 +116,17 @@ jobs:
           name: ${{ matrix.service }}-coverage-report
           path: ${{ matrix.reportPath }}/jacoco/test/html
           if-no-files-found: warn
+
+  aggregate:
+    runs-on: ubuntu-latest
+    needs: test
+    if: needs.setup.outputs.matrix != '{"include":[]}'
+    steps:
+      - name: Aggregate result
+        run: echo "All module tests completed successfully!"
+
+  no-changes:
+    runs-on: ubuntu-latest
+    if: needs.setup.outputs.matrix == '{"include":[]}'
+    steps:
+      - run: echo "No modules changed"
