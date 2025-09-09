@@ -8,6 +8,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,6 +38,8 @@ abstract class OauthTest<P : Any>(
 
     @BeforeEach
     fun setup() {
+        server = MockWebServer()
+        server.start()
         val base = server.url("/").toString().removeSuffix("/")
 
         val httpClient = HttpClient.create()
@@ -46,7 +49,6 @@ abstract class OauthTest<P : Any>(
                 c.addHandlerLast(WriteTimeoutHandler(1, TimeUnit.SECONDS))
             }
 
-        // Option B: WebClient giữ host, props giữ path
         client = WebClient.builder()
             .baseUrl(base)
             .clientConnector(ReactorClientHttpConnector(httpClient))
@@ -54,6 +56,11 @@ abstract class OauthTest<P : Any>(
 
         props = propsFactory(base)
         provider = buildProvider(props, client)
+    }
+
+    @AfterEach
+    fun teardown() {
+        server.shutdown()
     }
 
     protected fun enqueueJson(body: Any, code: Int = 200) {
