@@ -34,14 +34,24 @@ class GoogleTest {
         server.shutdown()
     }
 
-    @Test
-    fun `verify returns true when aud matches`() {
-        val responseBody = mapOf("aud" to "test-client")
+    // -----------------------
+    // helper function
+    // -----------------------
+    private fun enqueueJson(body: Any, code: Int = 200) {
         server.enqueue(
             MockResponse()
-                .setResponseCode(200)
-                .setBody(mapper.writeValueAsString(responseBody))
+                .setResponseCode(code)
+                .setHeader("Content-Type", "application/json")
+                .setBody(mapper.writeValueAsString(body))
         )
+    }
+
+    // -----------------------
+    // tests
+    // -----------------------
+    @Test
+    fun `verify returns true when aud matches`() {
+        enqueueJson(mapOf("aud" to "test-client"))
 
         StepVerifier.create(google.verify("dummy-token"))
             .expectNext(true)
@@ -50,12 +60,7 @@ class GoogleTest {
 
     @Test
     fun `verify returns false when aud mismatches`() {
-        val responseBody = mapOf("aud" to "other-client")
-        server.enqueue(
-            MockResponse()
-                .setResponseCode(200)
-                .setBody(mapper.writeValueAsString(responseBody))
-        )
+        enqueueJson(mapOf("aud" to "other-client"))
 
         StepVerifier.create(google.verify("dummy-token"))
             .expectNext(false)
@@ -64,12 +69,7 @@ class GoogleTest {
 
     @Test
     fun `verify throws when aud missing`() {
-        val responseBody = mapOf("sub" to "123456")
-        server.enqueue(
-            MockResponse()
-                .setResponseCode(200)
-                .setBody(mapper.writeValueAsString(responseBody))
-        )
+        enqueueJson(mapOf("sub" to "123456"))
 
         StepVerifier.create(google.verify("dummy-token"))
             .expectError(GoogleParseException::class.java)
@@ -78,12 +78,7 @@ class GoogleTest {
 
     @Test
     fun `getInfo returns payload`() {
-        val responseBody = mapOf("aud" to "test-client", "email" to "user@example.com")
-        server.enqueue(
-            MockResponse()
-                .setResponseCode(200)
-                .setBody(mapper.writeValueAsString(responseBody))
-        )
+        enqueueJson(mapOf("aud" to "test-client", "email" to "user@example.com"))
 
         StepVerifier.create(google.getInfo("dummy-token"))
             .expectNextMatches { it["email"] == "user@example.com" }
@@ -108,7 +103,8 @@ class GoogleTest {
         server.enqueue(
             MockResponse()
                 .setResponseCode(400)
-                .setBody("Bad Request")
+                .setHeader("Content-Type", "application/json")
+                .setBody("""{"error":"Bad Request"}""")
         )
 
         StepVerifier.create(google.verify("dummy-token"))
