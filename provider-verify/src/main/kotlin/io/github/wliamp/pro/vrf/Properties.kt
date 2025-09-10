@@ -23,7 +23,9 @@ internal data class Properties(
     )
 
     data class ZaloProps(
-        var baseUrl: String = "https://graph.zalo.me/v2.0/me",
+        var baseUrl: String = "https://graph.zalo.me",
+        var version: String = "/v2.0",
+        var uri: String = "/me",
         var fields: String = ""
     )
 }

@@ -10,8 +10,10 @@ internal class IZalo internal constructor(
 ) : IOauth {
     private val oauth = Oauth.ZALO
 
+    private val url = "${props.baseUrl}${props.version}${props.uri}"
+
     override fun verify(token: String): Mono<Boolean> =
-        fetchPayload("${props.baseUrl}?access_token=$token")
+        fetchPayload("${url}?access_token=$token")
             .map {
                 it["id"]?.toString()
                     ?: throw OauthParseException(oauth, "Missing 'id' in response")
@@ -21,8 +23,8 @@ internal class IZalo internal constructor(
     override fun getInfo(token: String): Mono<Map<String, Any>> =
         fetchPayload(
             props.fields.takeIf { it.isNotBlank() }
-                ?.let { "${props.baseUrl}?access_token=$token&fields=$it" }
-                ?: "${props.baseUrl}?access_token=$token"
+                ?.let { "${url}?access_token=$token&fields=$it" }
+                ?: "${url}?access_token=$token"
         )
 
     private fun fetchPayload(uri: String): Mono<Map<String, Any>> =
