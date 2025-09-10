@@ -8,6 +8,8 @@ import reactor.test.StepVerifier
 private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
     Properties.ZaloProps().apply {
         baseUrl = ""
+        version = "/v2.0"
+        uri = "/me"
         fields = ""
     }
 }) {
@@ -42,7 +44,7 @@ private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "/?access_token=dummy-token",
+            "${props.version}${props.uri}?access_token=dummy-token",
             recorded.path
         )
     }
@@ -57,7 +59,7 @@ private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "/?access_token=dummy-token",
+            "${props.version}${props.uri}?access_token=dummy-token",
             recorded.path
         )
     }
@@ -66,6 +68,8 @@ private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
     fun `getInfo builds correct uri with fields`() {
         val customProps = Properties.ZaloProps().apply {
             baseUrl = props.baseUrl
+            version = props.version
+            uri = props.uri
             fields = "id,name"
         }
         val zalo = IZalo(customProps, client)
@@ -78,7 +82,7 @@ private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "/?access_token=dummy-token&fields=id,name",
+            "${props.version}${props.uri}?access_token=dummy-token&fields=id,name",
             recorded.path
         )
     }

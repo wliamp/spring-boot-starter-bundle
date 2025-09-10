@@ -46,7 +46,7 @@ class PropsBindingTest {
 
             assertThat(props.facebook.baseUrl).isEqualTo("https://graph.facebook.com")
             assertThat(props.google.baseUrl).isEqualTo("https://oauth2.googleapis.com/tokeninfo")
-            assertThat(props.zalo.baseUrl).isEqualTo("https://graph.zalo.me/v2.0/me")
+            assertThat(props.zalo.baseUrl).isEqualTo("https://graph.zalo.me")
         }
     }
 }
