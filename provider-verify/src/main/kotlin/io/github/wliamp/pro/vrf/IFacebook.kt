@@ -1,6 +1,6 @@
 package io.github.wliamp.pro.vrf
 
-import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
@@ -15,7 +15,7 @@ internal class IFacebook internal constructor(
             it.appId.isNotBlank() &&
                 it.accessToken.isNotBlank()
         }?.let { p ->
-            fetchPayload("${p.baseUrl}${p.vrfUri}?input_token=$token&access_token=${p.accessToken}")
+            fetchFacebook("${p.baseUrl}${p.vrfUri}?input_token=$token&access_token=${p.accessToken}")
                 .map {
                     val data = it["data"] as? Map<*, *>
                         ?: throw OauthParseException(oauth, "Missing 'data' in response")
@@ -24,48 +24,21 @@ internal class IFacebook internal constructor(
                 }
         } ?: Mono.error(
             OauthConfigException(
-                oauth, "Missing 'provider.oauth.facebook.app-id' or 'provider.oauth.facebook.access-token'"
+                oauth,
+                "Missing " +
+                    "'provider.oauth.facebook.app-id' " +
+                    "or " +
+                    "'provider.oauth.facebook.access-token'"
             )
         )
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        fetchPayload(
+        fetchFacebook(
             props.fields.takeIf { it.isNotBlank() }
                 ?.let { "${props.baseUrl}${props.infoUri}?access_token=$token&fields=$it" }
                 ?: "${props.baseUrl}${props.infoUri}?access_token=$token"
         )
 
-    private fun fetchPayload(uri: String): Mono<Map<String, Any>> =
-        webClient.get()
-            .uri(uri)
-            .retrieve()
-            .onStatus({ it.isError }) { resp ->
-                resp.bodyToMono(String::class.java)
-                    .flatMap {
-                        Mono.error(OauthHttpException(oauth, resp.statusCode().value(), it))
-                    }
-            }
-            .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-            .onErrorMap {
-                when (it) {
-                    is OauthException -> it
-                    is java.net.ConnectException,
-                    is java.net.SocketTimeoutException,
-                    is org.springframework.web.reactive.function.client.WebClientRequestException ->
-                        OauthNetworkException(oauth, it)
-
-                    is com.fasterxml.jackson.core.JsonProcessingException ->
-                        OauthParseException(oauth, "Invalid JSON", it)
-
-                    is org.springframework.core.codec.DecodingException -> {
-                        val cause = it.cause
-                        if (cause is com.fasterxml.jackson.core.JsonProcessingException)
-                            OauthParseException(oauth, "Invalid JSON", cause)
-                        else OauthParseException(oauth, "Invalid JSON", it)
-                    }
-
-                    else -> OauthUnexpectedException(oauth, it)
-                }
-            }
-
+    private fun fetchFacebook(uri: String) =
+        webClient.fetchPayload(HttpMethod.GET, uri, oauth)
 }
