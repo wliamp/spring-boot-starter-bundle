@@ -1,6 +1,6 @@
 package io.github.wliamp.pro.vrf
 
-import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
@@ -8,30 +8,34 @@ internal class IFirebase internal constructor(
     private val props: OtpProps.FirebaseProps,
     private val webClient: WebClient
 ) : IOtp {
-    private val otp = Otp.FIREBASE
+    private val otp = Otp.FIREBASE.name
 
     override fun verify(code: String): Mono<Boolean> =
-        props.takeIf { it.apiKey.isNotBlank() }
-            ?.let {
-                fetchFirebaseOtp(code)
-                    .map {
-                        it["phoneNumber"] != null
-                    }
-            } ?: Mono.error(
-            RuntimeException("Missing firebaseApiKey in OtpProps")
-        )
+        fetchFirebase(code)
+            .map {
+                it["phoneNumber"]?.toString()
+                    ?: throw VerifyParseException(otp, "Missing 'phoneNumber' in response")
+                true
+            }
 
     override fun getInfo(code: String): Mono<Map<String, Any>> =
-        fetchFirebaseOtp(code)
+        fetchFirebase(code)
 
-    private fun fetchFirebaseOtp(code: String): Mono<Map<String, Any>> {
-        val uri = "${props.baseUrl}${props.version}${props.uri}?key=${props.apiKey}"
-        return webClient.post()
-            .uri(uri)
-            .bodyValue(mapOf("sessionInfo" to code, "code" to code))
-            .retrieve()
-            .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
-            .onErrorMap { RuntimeException("Firebase OTP verification failed", it) }
-    }
+    private fun fetchFirebase(code: String): Mono<Map<String, Any>> =
+        props.takeIf { it.apiKey.isNotBlank() }
+            ?.let {
+                webClient.fetchPayload(
+                    HttpMethod.POST,
+                    "${props.baseUrl}${props.version}${props.uri}?key=${props.apiKey}",
+                    otp,
+                    body = mapOf("sessionInfo" to code, "code" to code)
+                )
+            } ?: Mono.error(
+            VerifyConfigException(
+                otp,
+                "Missing " +
+                    "'provider.otp.firebase.api-key'"
+            )
+        )
 }
 

@@ -8,16 +8,23 @@ import reactor.core.publisher.Mono
 internal fun WebClient.fetchPayload(
     method: HttpMethod,
     uri: String,
-    provider: String
+    provider: String,
+    headers: Map<String, String> = emptyMap(),
+    queryParams: Map<String, String> = emptyMap(),
+    body: Any? = null
 ): Mono<Map<String, Any>> =
     this.method(method)
-        .uri(uri)
+        .uri {
+            it.path(uri)
+            queryParams.forEach { (k, v) -> it.queryParam(k, v) }
+            it.build()
+        }
+        .apply { headers.forEach { (k, v) -> this.header(k, v) } }
+        .apply { body?.let { this.bodyValue(it) } }
         .retrieve()
         .onStatus({ it.isError }) { resp ->
             resp.bodyToMono(String::class.java)
-                .flatMap {
-                    Mono.error(VerifyHttpException(provider, resp.statusCode().value(), it))
-                }
+                .flatMap { Mono.error(VerifyHttpException(provider, resp.statusCode().value(), it)) }
         }
         .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
         .onErrorMap {
@@ -41,3 +48,4 @@ internal fun WebClient.fetchPayload(
                 else -> VerifyUnexpectedException(provider, it)
             }
         }
+
