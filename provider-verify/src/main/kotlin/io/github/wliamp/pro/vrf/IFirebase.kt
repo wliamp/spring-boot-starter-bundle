@@ -26,9 +26,13 @@ internal class IFirebase internal constructor(
             ?.let {
                 webClient.fetchPayload(
                     HttpMethod.POST,
-                    "${props.baseUrl}${props.version}${props.uri}?key=${props.apiKey}",
+                    "${props.baseUrl}${props.version}${props.uri}",
                     otp,
-                    body = mapOf("sessionInfo" to code, "code" to code)
+                    queryParams = mapOf("key" to props.apiKey),
+                    body = mapOf(
+                        "sessionInfo" to code,
+                        "code" to code
+                    )
                 )
             } ?: Mono.error(
             VerifyConfigException(

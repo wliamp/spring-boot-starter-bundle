@@ -32,7 +32,7 @@ class FirebaseTest {
         val base = server.url("/").toString().removeSuffix("/")
         client = WebClient.builder().baseUrl(base).build()
         props = OtpProps.FirebaseProps(
-            baseUrl = base,
+            baseUrl = "",
             version = "v1",
             uri = "/verify",
             apiKey = "dummy-key"
