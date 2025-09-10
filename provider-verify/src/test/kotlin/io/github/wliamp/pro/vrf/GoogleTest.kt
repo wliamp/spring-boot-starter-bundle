@@ -43,7 +43,7 @@ private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
     @Test
     fun `verify errors when config missing clientId`() {
         val bad = Properties.GoogleProps().apply {
-            clientId = ""         // thiếu
+            clientId = ""
             baseUrl = "/tokeninfo"
         }
         val g = IGoogle(bad, client)
@@ -53,4 +53,3 @@ private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
             .verify()
     }
 }
-

@@ -13,7 +13,7 @@ internal class IGoogle internal constructor(
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf { it.clientId.isNotBlank() }
             ?.let { p ->
-                fetchGooglePayload(token).map {
+                fetchPayload(token).map {
                     p.clientId == (it["aud"]?.toString()
                         ?: throw OauthParseException(oauth, "Missing 'aud' in response"))
                 }
@@ -21,14 +21,14 @@ internal class IGoogle internal constructor(
             ?: Mono.error(
                 OauthConfigException(
                     oauth,
-                    "Missing 'provider.oauth.google.client-id' "
+                    "Missing 'provider.oauth.google.client-id'"
                 )
             )
 
     override fun getInfo(token: String): Mono<Map<String, Any>> =
-        fetchGooglePayload(token)
+        fetchPayload(token)
 
-    private fun fetchGooglePayload(token: String): Mono<Map<String, Any>> =
+    private fun fetchPayload(token: String): Mono<Map<String, Any>> =
         webClient.get()
             .uri("${props.baseUrl}?id_token=$token")
             .retrieve()
@@ -42,24 +42,17 @@ internal class IGoogle internal constructor(
                     is OauthException -> it
                     is java.net.ConnectException,
                     is java.net.SocketTimeoutException,
-                    is org.springframework.web.reactive.function.client.WebClientRequestException -> OauthNetworkException(
-                        oauth,
-                        it
-                    )
+                    is org.springframework.web.reactive.function.client.WebClientRequestException ->
+                        OauthNetworkException(oauth, it)
 
-                    is com.fasterxml.jackson.core.JsonProcessingException -> OauthParseException(
-                        oauth,
-                        "Invalid JSON",
-                        it
-                    )
+                    is com.fasterxml.jackson.core.JsonProcessingException ->
+                        OauthParseException(oauth, "Invalid JSON", it)
 
                     is org.springframework.core.codec.DecodingException -> {
                         val cause = it.cause
-                        if (cause is com.fasterxml.jackson.core.JsonProcessingException) OauthParseException(
-                            oauth,
-                            "Invalid JSON",
-                            cause
-                        ) else OauthParseException(oauth, "Invalid JSON", it)
+                        if (cause is com.fasterxml.jackson.core.JsonProcessingException)
+                            OauthParseException(oauth, "Invalid JSON", cause)
+                        else OauthParseException(oauth, "Invalid JSON", it)
                     }
 
                     else -> OauthUnexpectedException(oauth, it)
