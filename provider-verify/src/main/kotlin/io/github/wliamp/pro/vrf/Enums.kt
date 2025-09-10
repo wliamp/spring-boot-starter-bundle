@@ -5,3 +5,7 @@ enum class Oauth {
     FACEBOOK,
     ZALO
 }
+
+enum class Otp {
+    FIREBASE
+}
