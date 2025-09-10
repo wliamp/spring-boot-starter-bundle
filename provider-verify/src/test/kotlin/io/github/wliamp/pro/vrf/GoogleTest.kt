@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
-private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
-    Properties.GoogleProps().apply {
+private class GoogleTest : OauthTest<OauthProps.GoogleProps>({ _ ->
+    OauthProps.GoogleProps().apply {
         clientId = "test-client"
         baseUrl = ""
     }
 }) {
-    override fun buildProvider(props: Properties.GoogleProps, client: WebClient): IOauth =
+    override fun buildProvider(props: OauthProps.GoogleProps, client: WebClient): IOauth =
         IGoogle(props, client)
 
     @Test
@@ -43,7 +43,7 @@ private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
 
     @Test
     fun `verify errors when config missing clientId`() {
-        val bad = Properties.GoogleProps().apply {
+        val bad = OauthProps.GoogleProps().apply {
             clientId = ""
             baseUrl = ""
         }

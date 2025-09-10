@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
-@EnableConfigurationProperties(Properties::class)
-internal class AutoConfig private constructor(
-    private val props: Properties
+@EnableConfigurationProperties(OauthProps::class)
+internal class OauthAutoConfig private constructor(
+    private val props: OauthProps
 ) {
     @Bean
     @ConditionalOnProperty(

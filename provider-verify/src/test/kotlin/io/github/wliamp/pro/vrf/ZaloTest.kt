@@ -5,15 +5,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
-private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
-    Properties.ZaloProps().apply {
+private class ZaloTest : OauthTest<OauthProps.ZaloProps>({ _ ->
+    OauthProps.ZaloProps().apply {
         baseUrl = ""
         version = "/v2.0"
         uri = "/me"
         fields = ""
     }
 }) {
-    override fun buildProvider(props: Properties.ZaloProps, client: WebClient): IOauth =
+    override fun buildProvider(props: OauthProps.ZaloProps, client: WebClient): IOauth =
         IZalo(props, client)
 
     @Test
@@ -66,7 +66,7 @@ private class ZaloTest : OauthTest<Properties.ZaloProps>({ _ ->
 
     @Test
     fun `getInfo builds correct uri with fields`() {
-        val customProps = Properties.ZaloProps().apply {
+        val customProps = OauthProps.ZaloProps().apply {
             baseUrl = props.baseUrl
             version = props.version
             uri = props.uri
