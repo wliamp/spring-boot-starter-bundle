@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 internal class IFacebook internal constructor(
-    private val props: Properties.FacebookProps,
+    private val props: OauthProps.FacebookProps,
     private val webClient: WebClient
 ) : IOauth {
     private val oauth = Oauth.FACEBOOK

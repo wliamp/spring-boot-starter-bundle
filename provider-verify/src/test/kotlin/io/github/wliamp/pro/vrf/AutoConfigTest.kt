@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 class AutoConfigTest {
 
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(AutoConfig::class.java))
+        .withConfiguration(AutoConfigurations.of(OauthAutoConfig::class.java))
 
     @Test
     fun `when all enabled then all beans created`() {

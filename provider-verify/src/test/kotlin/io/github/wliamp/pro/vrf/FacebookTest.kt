@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
-private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
-    Properties.FacebookProps().apply {
+private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
+    OauthProps.FacebookProps().apply {
         appId = "test-app"
         accessToken = "test-access-token"
         baseUrl = ""
@@ -15,7 +15,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
         infoUri = "/me"
     }
 }) {
-    override fun buildProvider(props: Properties.FacebookProps, client: WebClient): IOauth =
+    override fun buildProvider(props: OauthProps.FacebookProps, client: WebClient): IOauth =
         IFacebook(props, client)
 
     @Test
@@ -56,7 +56,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
     @Test
     fun `verify errors when config missing appId`() {
-        val bad = Properties.FacebookProps().apply {
+        val bad = OauthProps.FacebookProps().apply {
             appId = ""
             accessToken = "test-access-token"
             baseUrl = ""
@@ -70,7 +70,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
     @Test
     fun `verify errors when config missing accessToken`() {
-        val bad = Properties.FacebookProps().apply {
+        val bad = OauthProps.FacebookProps().apply {
             appId = "test-app"
             accessToken = ""
             baseUrl = ""
@@ -84,7 +84,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
     @Test
     fun `getInfo works when fields config empty`() {
-        val bad = Properties.FacebookProps().apply {
+        val bad = OauthProps.FacebookProps().apply {
             appId = "test-app"
             accessToken = "test-access-token"
             baseUrl = ""
@@ -131,7 +131,7 @@ private class FacebookTest : OauthTest<Properties.FacebookProps>({ _ ->
 
     @Test
     fun `getInfo builds correct uri with fields`() {
-        val customProps = Properties.FacebookProps().apply {
+        val customProps = OauthProps.FacebookProps().apply {
             appId = "test-app"
             accessToken = "test-access-token"
             baseUrl = props.baseUrl

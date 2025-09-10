@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 internal class IGoogle internal constructor(
-    private val props: Properties.GoogleProps,
+    private val props: OauthProps.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {
     private val oauth = Oauth.GOOGLE

@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 class PropsBindingTest {
 
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(AutoConfig::class.java))
+        .withConfiguration(AutoConfigurations.of(OauthAutoConfig::class.java))
 
     @Test
     fun `properties should bind correctly`() {
@@ -24,7 +24,7 @@ class PropsBindingTest {
                 "provider.oauth.zalo.fields=id,picture"
             )
             .run {
-                val props = it.getBean(Properties::class.java)
+                val props = it.getBean(OauthProps::class.java)
 
                 assertThat(props.facebook.baseUrl).isEqualTo("https://custom.fb")
                 assertThat(props.facebook.appId).isEqualTo("fb-app")
@@ -42,7 +42,7 @@ class PropsBindingTest {
     @Test
     fun `defaults should apply when no config provided`() {
         baseRunner.run {
-            val props = it.getBean(Properties::class.java)
+            val props = it.getBean(OauthProps::class.java)
 
             assertThat(props.facebook.baseUrl).isEqualTo("https://graph.facebook.com")
             assertThat(props.google.baseUrl).isEqualTo("https://oauth2.googleapis.com")

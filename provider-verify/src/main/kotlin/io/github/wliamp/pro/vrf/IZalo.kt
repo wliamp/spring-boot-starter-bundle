@@ -5,7 +5,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 internal class IZalo internal constructor(
-    private val props: Properties.ZaloProps,
+    private val props: OauthProps.ZaloProps,
     private val webClient: WebClient
 ) : IOauth {
     private val oauth = Oauth.ZALO
