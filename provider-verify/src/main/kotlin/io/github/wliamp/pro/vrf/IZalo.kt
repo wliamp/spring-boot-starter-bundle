@@ -8,7 +8,7 @@ internal class IZalo internal constructor(
     private val props: OauthProps.ZaloProps,
     private val webClient: WebClient
 ) : IOauth {
-    private val oauth = Oauth.ZALO
+    private val oauth = Oauth.ZALO.name
 
     private val url = "${props.baseUrl}${props.version}${props.uri}"
 

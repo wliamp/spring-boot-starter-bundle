@@ -8,7 +8,7 @@ internal class IGoogle internal constructor(
     private val props: OauthProps.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {
-    private val oauth = Oauth.GOOGLE
+    private val oauth = Oauth.GOOGLE.name
 
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf { it.clientId.isNotBlank() }

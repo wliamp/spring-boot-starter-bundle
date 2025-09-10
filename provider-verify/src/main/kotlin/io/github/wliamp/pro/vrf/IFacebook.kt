@@ -8,7 +8,7 @@ internal class IFacebook internal constructor(
     private val props: OauthProps.FacebookProps,
     private val webClient: WebClient
 ) : IOauth {
-    private val oauth = Oauth.FACEBOOK
+    private val oauth = Oauth.FACEBOOK.name
 
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf {

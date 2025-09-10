@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 internal fun WebClient.fetchPayload(
     method: HttpMethod,
     uri: String,
-    oauth: Oauth
+    provider: String
 ): Mono<Map<String, Any>> =
     this.method(method)
         .uri(uri)
@@ -16,7 +16,7 @@ internal fun WebClient.fetchPayload(
         .onStatus({ it.isError }) { resp ->
             resp.bodyToMono(String::class.java)
                 .flatMap {
-                    Mono.error(VerifyHttpException(oauth, resp.statusCode().value(), it))
+                    Mono.error(VerifyHttpException(provider, resp.statusCode().value(), it))
                 }
         }
         .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
@@ -26,18 +26,18 @@ internal fun WebClient.fetchPayload(
                 is java.net.ConnectException,
                 is java.net.SocketTimeoutException,
                 is org.springframework.web.reactive.function.client.WebClientRequestException ->
-                    VerifyNetworkException(oauth, it)
+                    VerifyNetworkException(provider, it)
 
                 is com.fasterxml.jackson.core.JsonProcessingException ->
-                    VerifyParseException(oauth, "Invalid JSON", it)
+                    VerifyParseException(provider, "Invalid JSON", it)
 
                 is org.springframework.core.codec.DecodingException -> {
                     val cause = it.cause
                     if (cause is com.fasterxml.jackson.core.JsonProcessingException)
-                        VerifyParseException(oauth, "Invalid JSON", cause)
-                    else VerifyParseException(oauth, "Invalid JSON", it)
+                        VerifyParseException(provider, "Invalid JSON", cause)
+                    else VerifyParseException(provider, "Invalid JSON", it)
                 }
 
-                else -> VerifyUnexpectedException(oauth, it)
+                else -> VerifyUnexpectedException(provider, it)
             }
         }
