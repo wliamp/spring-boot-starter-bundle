@@ -18,7 +18,8 @@ internal data class Properties(
     )
 
     data class GoogleProps(
-        var baseUrl: String = "https://oauth2.googleapis.com/tokeninfo",
+        var baseUrl: String = "https://oauth2.googleapis.com",
+        var uri: String = "/tokeninfo",
         var clientId: String = ""
     )
 

@@ -10,6 +10,8 @@ internal class IGoogle internal constructor(
 ) : IOauth {
     private val oauth = Oauth.GOOGLE
 
+    private val url = "${props.baseUrl}${props.uri}"
+
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf { it.clientId.isNotBlank() }
             ?.let { p ->
@@ -30,7 +32,7 @@ internal class IGoogle internal constructor(
 
     private fun fetchPayload(token: String): Mono<Map<String, Any>> =
         webClient.get()
-            .uri("${props.baseUrl}?id_token=$token")
+            .uri("${url}?id_token=$token")
             .retrieve()
             .onStatus({ it.isError }) { resp ->
                 resp.bodyToMono(String::class.java)
