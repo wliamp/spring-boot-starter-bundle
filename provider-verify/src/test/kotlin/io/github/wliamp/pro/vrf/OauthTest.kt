@@ -80,7 +80,7 @@ abstract class OauthTest<P : Any>(
             .setBody("""{"error":"Bad Request"}"""))
 
         StepVerifier.create(provider.verify("dummy-token"))
-            .expectError(OauthHttpException::class.java)
+            .expectError(VerifyHttpException::class.java)
             .verify()
     }
 
@@ -89,7 +89,7 @@ abstract class OauthTest<P : Any>(
         server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE))
 
         StepVerifier.create(provider.verify("dummy-token"))
-            .expectError(OauthNetworkException::class.java)
+            .expectError(VerifyNetworkException::class.java)
             .verify()
     }
 
@@ -101,7 +101,7 @@ abstract class OauthTest<P : Any>(
             .setBody("not-a-json"))
 
         StepVerifier.create(provider.getInfo("dummy-token"))
-            .expectError(OauthParseException::class.java)
+            .expectError(VerifyParseException::class.java)
             .verify()
     }
 

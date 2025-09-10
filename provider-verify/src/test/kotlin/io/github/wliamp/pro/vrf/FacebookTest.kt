@@ -41,7 +41,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
         enqueueJson(mapOf("no_data" to "oops"))
 
         StepVerifier.create(provider.verify("dummy-token"))
-            .expectError(OauthParseException::class.java)
+            .expectError(VerifyParseException::class.java)
             .verify()
     }
 
@@ -50,7 +50,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
         enqueueJson(mapOf("data" to mapOf("id" to "123456")))
 
         StepVerifier.create(provider.verify("dummy-token"))
-            .expectError(OauthParseException::class.java)
+            .expectError(VerifyParseException::class.java)
             .verify()
     }
 
@@ -64,7 +64,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
         val f = IFacebook(bad, client)
 
         StepVerifier.create(f.verify("dummy-token"))
-            .expectError(OauthConfigException::class.java)
+            .expectError(VerifyConfigException::class.java)
             .verify()
     }
 
@@ -78,7 +78,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
         val f = IFacebook(bad, client)
 
         StepVerifier.create(f.verify("dummy-token"))
-            .expectError(OauthConfigException::class.java)
+            .expectError(VerifyConfigException::class.java)
             .verify()
     }
 

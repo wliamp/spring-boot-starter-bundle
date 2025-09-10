@@ -1,34 +1,34 @@
 package io.github.wliamp.pro.vrf
 
-internal sealed class OauthException(
+internal sealed class VerifyException(
     oauth: Oauth,
     message: String,
     cause: Throwable? = null
 ) : RuntimeException("[$oauth] $message", cause)
 
-internal class OauthConfigException(
+internal class VerifyConfigException(
     oauth: Oauth,
     message: String
-) : OauthException(oauth, message)
+) : VerifyException(oauth, message)
 
-internal class OauthHttpException(
+internal class VerifyHttpException(
     oauth: Oauth,
     status: Int,
     responseBody: String
-) : OauthException(oauth, "HTTP $status: $responseBody")
+) : VerifyException(oauth, "HTTP $status: $responseBody")
 
-internal class OauthParseException(
+internal class VerifyParseException(
     oauth: Oauth,
     message: String,
     cause: Throwable? = null
-) : OauthException(oauth, message, cause)
+) : VerifyException(oauth, message, cause)
 
-internal class OauthNetworkException(
+internal class VerifyNetworkException(
     oauth: Oauth,
     cause: Throwable
-) : OauthException(oauth, "Network error", cause)
+) : VerifyException(oauth, "Network error", cause)
 
-internal class OauthUnexpectedException(
+internal class VerifyUnexpectedException(
     oauth: Oauth,
     cause: Throwable
-) : OauthException(oauth, "Unexpected error", cause)
+) : VerifyException(oauth, "Unexpected error", cause)

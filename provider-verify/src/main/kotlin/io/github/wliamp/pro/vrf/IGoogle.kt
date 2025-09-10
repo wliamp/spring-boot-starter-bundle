@@ -16,11 +16,11 @@ internal class IGoogle internal constructor(
                 fetchGoogle(token)
                     .map {
                         p.clientId == (it["aud"]?.toString()
-                            ?: throw OauthParseException(oauth, "Missing 'aud' in response"))
+                            ?: throw VerifyParseException(oauth, "Missing 'aud' in response"))
                     }
             }
             ?: Mono.error(
-                OauthConfigException(
+                VerifyConfigException(
                     oauth,
                     "Missing " +
                         "'provider.oauth.google.client-id'"

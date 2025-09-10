@@ -16,7 +16,7 @@ internal class IZalo internal constructor(
         fetchZalo("${url}?access_token=$token")
             .map {
                 it["id"]?.toString()
-                    ?: throw OauthParseException(oauth, "Missing 'id' in response")
+                    ?: throw VerifyParseException(oauth, "Missing 'id' in response")
                 true
             }
 

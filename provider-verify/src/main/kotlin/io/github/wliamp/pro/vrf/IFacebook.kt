@@ -18,12 +18,12 @@ internal class IFacebook internal constructor(
             fetchFacebook("${p.baseUrl}${p.vrfUri}?input_token=$token&access_token=${p.accessToken}")
                 .map {
                     val data = it["data"] as? Map<*, *>
-                        ?: throw OauthParseException(oauth, "Missing 'data' in response")
+                        ?: throw VerifyParseException(oauth, "Missing 'data' in response")
                     p.appId == (data["app_id"]?.toString()
-                        ?: throw OauthParseException(oauth, "Missing 'app_id' in response"))
+                        ?: throw VerifyParseException(oauth, "Missing 'app_id' in response"))
                 }
         } ?: Mono.error(
-            OauthConfigException(
+            VerifyConfigException(
                 oauth,
                 "Missing " +
                     "'provider.oauth.facebook.app-id' " +
