@@ -7,7 +7,7 @@ import reactor.test.StepVerifier
 private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
     Properties.GoogleProps().apply {
         clientId = "test-client"
-        baseUrl = "/tokeninfo"
+        baseUrl = ""
     }
 }) {
     override fun buildProvider(props: Properties.GoogleProps, client: WebClient): IOauth =
@@ -44,7 +44,7 @@ private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
     fun `verify errors when config missing clientId`() {
         val bad = Properties.GoogleProps().apply {
             clientId = ""
-            baseUrl = "/tokeninfo"
+            baseUrl = ""
         }
         val g = IGoogle(bad, client)
 

@@ -45,7 +45,7 @@ class PropsBindingTest {
             val props = it.getBean(Properties::class.java)
 
             assertThat(props.facebook.baseUrl).isEqualTo("https://graph.facebook.com")
-            assertThat(props.google.baseUrl).isEqualTo("https://oauth2.googleapis.com/tokeninfo")
+            assertThat(props.google.baseUrl).isEqualTo("https://oauth2.googleapis.com")
             assertThat(props.zalo.baseUrl).isEqualTo("https://graph.zalo.me")
         }
     }
