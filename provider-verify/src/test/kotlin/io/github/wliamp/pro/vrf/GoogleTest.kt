@@ -1,6 +1,7 @@
 package io.github.wliamp.pro.vrf
 
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
@@ -51,5 +52,20 @@ private class GoogleTest : OauthTest<Properties.GoogleProps>({ _ ->
         StepVerifier.create(g.verify("dummy-token"))
             .expectError(OauthConfigException::class.java)
             .verify()
+    }
+
+    @Test
+    fun `verify builds correct google uri`() {
+        enqueueJson(mapOf("aud" to "test-client"))
+
+        StepVerifier.create(provider.verify("dummy-token"))
+            .expectNext(true)
+            .verifyComplete()
+
+        val recorded = server.takeRequest()
+        assertEquals(
+            "${props.uri}?id_token=dummy-token",
+            recorded.path
+        )
     }
 }
