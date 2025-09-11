@@ -30,7 +30,7 @@ private class ZaloTest : OauthTest<OauthProps.ZaloProps>({ _ ->
         enqueueJson(mapOf("name" to "Alice"))
 
         StepVerifier.create(provider.verify("dummy-token"))
-            .expectError(OauthParseException::class.java)
+            .expectError(VerifyParseException::class.java)
             .verify()
     }
 

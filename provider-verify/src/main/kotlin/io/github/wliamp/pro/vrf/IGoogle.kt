@@ -8,7 +8,7 @@ internal class IGoogle internal constructor(
     private val props: OauthProps.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {
-    private val oauth = Oauth.GOOGLE
+    private val oauth = Oauth.GOOGLE.name
 
     override fun verify(token: String): Mono<Boolean> =
         props.takeIf { it.clientId.isNotBlank() }
@@ -16,11 +16,11 @@ internal class IGoogle internal constructor(
                 fetchGoogle(token)
                     .map {
                         p.clientId == (it["aud"]?.toString()
-                            ?: throw OauthParseException(oauth, "Missing 'aud' in response"))
+                            ?: throw VerifyParseException(oauth, "Missing 'aud' in response"))
                     }
             }
             ?: Mono.error(
-                OauthConfigException(
+                VerifyConfigException(
                     oauth,
                     "Missing " +
                         "'provider.oauth.google.client-id'"
@@ -33,7 +33,8 @@ internal class IGoogle internal constructor(
     private fun fetchGoogle(token: String) =
         webClient.fetchPayload(
             HttpMethod.GET,
-            "${props.baseUrl}${props.uri}?id_token=$token",
-            oauth
+            "${props.baseUrl}${props.uri}",
+            oauth,
+            queryParams = mapOf("id_token" to token)
         )
 }

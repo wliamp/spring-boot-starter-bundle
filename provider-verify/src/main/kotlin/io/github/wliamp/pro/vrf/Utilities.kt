@@ -8,36 +8,44 @@ import reactor.core.publisher.Mono
 internal fun WebClient.fetchPayload(
     method: HttpMethod,
     uri: String,
-    oauth: Oauth
+    provider: String,
+    headers: Map<String, String> = emptyMap(),
+    queryParams: Map<String, String> = emptyMap(),
+    body: Any? = null
 ): Mono<Map<String, Any>> =
     this.method(method)
-        .uri(uri)
+        .uri {
+            it.path(uri)
+            queryParams.forEach { (k, v) -> it.queryParam(k, v) }
+            it.build()
+        }
+        .apply { headers.forEach { (k, v) -> this.header(k, v) } }
+        .apply { body?.let { this.bodyValue(it) } }
         .retrieve()
         .onStatus({ it.isError }) { resp ->
             resp.bodyToMono(String::class.java)
-                .flatMap {
-                    Mono.error(OauthHttpException(oauth, resp.statusCode().value(), it))
-                }
+                .flatMap { Mono.error(VerifyHttpException(provider, resp.statusCode().value(), it)) }
         }
         .bodyToMono(object : ParameterizedTypeReference<Map<String, Any>>() {})
         .onErrorMap {
             when (it) {
-                is OauthException -> it
+                is VerifyException -> it
                 is java.net.ConnectException,
                 is java.net.SocketTimeoutException,
                 is org.springframework.web.reactive.function.client.WebClientRequestException ->
-                    OauthNetworkException(oauth, it)
+                    VerifyNetworkException(provider, it)
 
                 is com.fasterxml.jackson.core.JsonProcessingException ->
-                    OauthParseException(oauth, "Invalid JSON", it)
+                    VerifyParseException(provider, "Invalid JSON", it)
 
                 is org.springframework.core.codec.DecodingException -> {
                     val cause = it.cause
                     if (cause is com.fasterxml.jackson.core.JsonProcessingException)
-                        OauthParseException(oauth, "Invalid JSON", cause)
-                    else OauthParseException(oauth, "Invalid JSON", it)
+                        VerifyParseException(provider, "Invalid JSON", cause)
+                    else VerifyParseException(provider, "Invalid JSON", it)
                 }
 
-                else -> OauthUnexpectedException(oauth, it)
+                else -> VerifyUnexpectedException(provider, it)
             }
         }
+

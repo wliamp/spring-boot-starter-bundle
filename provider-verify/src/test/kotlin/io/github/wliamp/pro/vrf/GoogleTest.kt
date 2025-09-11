@@ -37,7 +37,7 @@ private class GoogleTest : OauthTest<OauthProps.GoogleProps>({ _ ->
         enqueueJson(mapOf("sub" to "123456"))
 
         StepVerifier.create(provider.verify("dummy-token"))
-            .expectError(OauthParseException::class.java)
+            .expectError(VerifyParseException::class.java)
             .verify()
     }
 
@@ -50,7 +50,7 @@ private class GoogleTest : OauthTest<OauthProps.GoogleProps>({ _ ->
         val g = IGoogle(bad, client)
 
         StepVerifier.create(g.verify("dummy-token"))
-            .expectError(OauthConfigException::class.java)
+            .expectError(VerifyConfigException::class.java)
             .verify()
     }
 
