@@ -4,7 +4,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-internal class IZalo internal constructor(
+internal class OauthZalo internal constructor(
     private val props: OauthProps.ZaloProps,
     private val webClient: WebClient
 ) : IOauth {

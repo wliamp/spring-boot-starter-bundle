@@ -4,7 +4,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-internal class IFirebase internal constructor(
+internal class OtpFirebase internal constructor(
     private val props: OtpProps.FirebaseProps,
     private val webClient: WebClient
 ) : IOtp {

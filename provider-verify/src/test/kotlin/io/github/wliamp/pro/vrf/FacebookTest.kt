@@ -24,7 +24,7 @@ internal class FacebookTest : ITestSetup<OauthProps.FacebookProps, IOauth> {
     }
 
     override fun buildProvider(props: OauthProps.FacebookProps, client: WebClient) =
-        IFacebook(props, client)
+        OauthFacebook(props, client)
 
     @BeforeEach
     fun setup() {
@@ -83,7 +83,7 @@ internal class FacebookTest : ITestSetup<OauthProps.FacebookProps, IOauth> {
             vrfUri = "/debug_token"
             infoUri = "/me"
         }
-        val fb = IFacebook(bad, client)
+        val fb = OauthFacebook(bad, client)
 
         StepVerifier.create(fb.verify("dummy-token"))
             .expectError(VerifyConfigException::class.java)
@@ -99,7 +99,7 @@ internal class FacebookTest : ITestSetup<OauthProps.FacebookProps, IOauth> {
             vrfUri = "/debug_token"
             infoUri = "/me"
         }
-        val fb = IFacebook(bad, client)
+        val fb = OauthFacebook(bad, client)
 
         StepVerifier.create(fb.verify("dummy-token"))
             .expectError(VerifyConfigException::class.java)
@@ -131,7 +131,7 @@ internal class FacebookTest : ITestSetup<OauthProps.FacebookProps, IOauth> {
             vrfUri = "/debug_token"
             infoUri = "/me"
         }
-        val fb = IFacebook(customProps, client)
+        val fb = OauthFacebook(customProps, client)
 
         enqueueJson(server, mapOf("id" to "456"))
 
@@ -171,7 +171,7 @@ internal class FacebookTest : ITestSetup<OauthProps.FacebookProps, IOauth> {
             vrfUri = "/debug_token"
             infoUri = "/me"
         }
-        val fb = IFacebook(customProps, client)
+        val fb = OauthFacebook(customProps, client)
 
         enqueueJson(server, mapOf("id" to "123", "name" to "Alice"))
 

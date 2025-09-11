@@ -20,7 +20,7 @@ internal class OauthAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun fb(): IFacebook = IFacebook(props.facebook, WebClient.builder().build())
+    fun fb(): OauthFacebook = OauthFacebook(props.facebook, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -29,7 +29,7 @@ internal class OauthAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun gg(): IGoogle = IGoogle(props.google, WebClient.builder().build())
+    fun gg(): OauthGoogle = OauthGoogle(props.google, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,14 +38,14 @@ internal class OauthAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zl(): IZalo = IZalo(props.zalo, WebClient.builder().build())
+    fun zl(): OauthZalo = OauthZalo(props.zalo, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun vrf(
-        fb: ObjectProvider<IFacebook>,
-        gg: ObjectProvider<IGoogle>,
-        zl: ObjectProvider<IZalo>
+        fb: ObjectProvider<OauthFacebook>,
+        gg: ObjectProvider<OauthGoogle>,
+        zl: ObjectProvider<OauthZalo>
     ): OauthProvider = OauthProvider(
         fb.ifAvailable,
         gg.ifAvailable,

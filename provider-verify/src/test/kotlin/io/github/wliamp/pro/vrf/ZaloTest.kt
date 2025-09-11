@@ -22,7 +22,7 @@ internal class ZaloTest : ITestSetup<OauthProps.ZaloProps, IOauth> {
     }
 
     override fun buildProvider(props: OauthProps.ZaloProps, client: WebClient) =
-        IZalo(props, client)
+        OauthZalo(props, client)
 
     @BeforeEach
     fun setup() {
@@ -92,7 +92,7 @@ internal class ZaloTest : ITestSetup<OauthProps.ZaloProps, IOauth> {
             uri = "/me"
             fields = "id,name"
         }
-        val zalo = IZalo(customProps, client)
+        val zalo = OauthZalo(customProps, client)
 
         enqueueJson(server, mapOf("id" to "123", "name" to "Alice"))
 

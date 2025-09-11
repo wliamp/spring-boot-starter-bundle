@@ -26,7 +26,7 @@ internal class OnErrorTest : ITestSetup<OauthProps.GoogleProps, IOauth> {
     }
 
     override fun buildProvider(props: OauthProps.GoogleProps, client: WebClient) =
-        IGoogle(props, client)
+        OauthGoogle(props, client)
 
     @BeforeAll
     fun beforeAll() = server.start()

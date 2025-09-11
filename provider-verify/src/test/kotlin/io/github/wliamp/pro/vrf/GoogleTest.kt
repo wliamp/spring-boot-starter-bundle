@@ -21,7 +21,7 @@ internal class GoogleTest : ITestSetup<OauthProps.GoogleProps, IOauth> {
     }
 
     override fun buildProvider(props: OauthProps.GoogleProps, client: WebClient) =
-        IGoogle(props, client)
+        OauthGoogle(props, client)
 
     @BeforeAll
     fun beforeAll() = server.start()
@@ -62,7 +62,7 @@ internal class GoogleTest : ITestSetup<OauthProps.GoogleProps, IOauth> {
             clientId = ""
             baseUrl = ""
         }
-        val g = IGoogle(bad, client)
+        val g = OauthGoogle(bad, client)
         StepVerifier.create(g.verify("dummy-token"))
             .expectError(VerifyConfigException::class.java)
             .verify()

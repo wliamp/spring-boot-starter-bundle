@@ -23,7 +23,7 @@ internal class FirebaseTest : ITestSetup<OtpProps.FirebaseProps, IOtp> {
     )
 
     override fun buildProvider(props: OtpProps.FirebaseProps, client: WebClient) =
-        IFirebase(props, client)
+        OtpFirebase(props, client)
 
     @BeforeAll
     fun beforeAll() = server.start()

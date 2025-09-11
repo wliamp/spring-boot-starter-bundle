@@ -19,9 +19,9 @@ class AutoConfigTest {
                 "provider.oauth.zalo.enabled=true"
             )
             .run {
-                assertThat(it).hasSingleBean(IFacebook::class.java)
-                assertThat(it).hasSingleBean(IGoogle::class.java)
-                assertThat(it).hasSingleBean(IZalo::class.java)
+                assertThat(it).hasSingleBean(OauthFacebook::class.java)
+                assertThat(it).hasSingleBean(OauthGoogle::class.java)
+                assertThat(it).hasSingleBean(OauthZalo::class.java)
                 assertThat(it).hasSingleBean(OauthProvider::class.java)
             }
     }
@@ -35,9 +35,9 @@ class AutoConfigTest {
                 "provider.oauth.zalo.enabled=true"
             )
             .run {
-                assertThat(it).doesNotHaveBean(IFacebook::class.java)
-                assertThat(it).hasSingleBean(IGoogle::class.java)
-                assertThat(it).hasSingleBean(IZalo::class.java)
+                assertThat(it).doesNotHaveBean(OauthFacebook::class.java)
+                assertThat(it).hasSingleBean(OauthGoogle::class.java)
+                assertThat(it).hasSingleBean(OauthZalo::class.java)
             }
     }
 
@@ -50,9 +50,9 @@ class AutoConfigTest {
                 "provider.oauth.zalo.enabled=true"
             )
             .run {
-                assertThat(it).hasSingleBean(IFacebook::class.java)
-                assertThat(it).doesNotHaveBean(IGoogle::class.java)
-                assertThat(it).hasSingleBean(IZalo::class.java)
+                assertThat(it).hasSingleBean(OauthFacebook::class.java)
+                assertThat(it).doesNotHaveBean(OauthGoogle::class.java)
+                assertThat(it).hasSingleBean(OauthZalo::class.java)
             }
     }
 
@@ -65,9 +65,9 @@ class AutoConfigTest {
                 "provider.oauth.zalo.enabled=false"
             )
             .run {
-                assertThat(it).hasSingleBean(IFacebook::class.java)
-                assertThat(it).hasSingleBean(IGoogle::class.java)
-                assertThat(it).doesNotHaveBean(IZalo::class.java)
+                assertThat(it).hasSingleBean(OauthFacebook::class.java)
+                assertThat(it).hasSingleBean(OauthGoogle::class.java)
+                assertThat(it).doesNotHaveBean(OauthZalo::class.java)
             }
     }
 }
