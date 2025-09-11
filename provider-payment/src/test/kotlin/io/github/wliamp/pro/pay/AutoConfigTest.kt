@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 class AutoConfigTest {
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(AutoConfig::class.java))
+        .withConfiguration(AutoConfigurations.of(PaymentAutoConfig::class.java))
 
     @Test
     fun `when enabled then all beans should be created`() {
@@ -22,12 +22,12 @@ class AutoConfigTest {
             "provider.payment.zalo-pay.app-id=1001",
             "provider.payment.zalo-pay.key1=zalo-secret"
         ).run { ctx ->
-            assertThat(ctx).hasSingleBean(Properties::class.java)
+            assertThat(ctx).hasSingleBean(PaymentProps::class.java)
             assertThat(ctx).hasSingleBean(PaymentProvider::class.java)
 
             assertThat(ctx).hasSingleBean(IAuthorizeNet::class.java)
-            assertThat(ctx).hasSingleBean(IVnPay::class.java)
-            assertThat(ctx).hasSingleBean(IZaloPay::class.java)
+            assertThat(ctx).hasSingleBean(IVnPayment::class.java)
+            assertThat(ctx).hasSingleBean(IZaloPayment::class.java)
         }
     }
 
@@ -39,8 +39,8 @@ class AutoConfigTest {
             "provider.payment.zalo-pay.enabled=true"
         ).run { ctx ->
             assertThat(ctx).doesNotHaveBean(IAuthorizeNet::class.java)
-            assertThat(ctx).hasSingleBean(IVnPay::class.java)
-            assertThat(ctx).hasSingleBean(IZaloPay::class.java)
+            assertThat(ctx).hasSingleBean(IVnPayment::class.java)
+            assertThat(ctx).hasSingleBean(IZaloPayment::class.java)
         }
     }
 
@@ -52,8 +52,8 @@ class AutoConfigTest {
             "provider.payment.zalo-pay.enabled=true"
         ).run { ctx ->
             assertThat(ctx).hasSingleBean(IAuthorizeNet::class.java)
-            assertThat(ctx).doesNotHaveBean(IVnPay::class.java)
-            assertThat(ctx).hasSingleBean(IZaloPay::class.java)
+            assertThat(ctx).doesNotHaveBean(IVnPayment::class.java)
+            assertThat(ctx).hasSingleBean(IZaloPayment::class.java)
         }
     }
 
@@ -65,8 +65,8 @@ class AutoConfigTest {
             "provider.payment.zalo-pay.enabled=false"
         ).run { ctx ->
             assertThat(ctx).hasSingleBean(IAuthorizeNet::class.java)
-            assertThat(ctx).hasSingleBean(IVnPay::class.java)
-            assertThat(ctx).doesNotHaveBean(IZaloPay::class.java)
+            assertThat(ctx).hasSingleBean(IVnPayment::class.java)
+            assertThat(ctx).doesNotHaveBean(IZaloPayment::class.java)
         }
     }
 }

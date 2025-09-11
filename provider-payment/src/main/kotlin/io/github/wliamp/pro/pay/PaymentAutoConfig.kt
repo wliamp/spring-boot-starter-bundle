@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
-@EnableConfigurationProperties(Properties::class)
-internal class AutoConfig private constructor(
-    private val props: Properties
+@EnableConfigurationProperties(PaymentProps::class)
+internal class PaymentAutoConfig private constructor(
+    private val props: PaymentProps
 ) {
     @Bean
     @ConditionalOnProperty(
@@ -20,7 +20,7 @@ internal class AutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun an(): IPay<AuthorizeNetClientData, AuthorizeNetSystemData> = IAuthorizeNet(props.authorizeNet, WebClient.builder().build())
+    fun an(): IPayment<AuthorizeNetClientData, AuthorizeNetSystemData> = IAuthorizeNet(props.authorizeNet, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -29,7 +29,7 @@ internal class AutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun vp(): IPay<VnPayClientData, VnPaySystemData> = IVnPay(props.vnPay, WebClient.builder().build())
+    fun vp(): IPayment<VnPayClientData, VnPaySystemData> = IVnPayment(props.vnPay, WebClient.builder().build())
 
     @Bean
     @ConditionalOnProperty(
@@ -38,14 +38,14 @@ internal class AutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun zp(): IPay<ZaloPayClientData, ZaloPaySystemData> = IZaloPay(props.zaloPay, WebClient.builder().build())
+    fun zp(): IPayment<ZaloPayClientData, ZaloPaySystemData> = IZaloPayment(props.zaloPay, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun pay(
-        an: ObjectProvider<IPay<AuthorizeNetClientData, AuthorizeNetSystemData>>,
-        vp: ObjectProvider<IPay<VnPayClientData, VnPaySystemData>>,
-        zp: ObjectProvider<IPay<ZaloPayClientData, ZaloPaySystemData>>
+        an: ObjectProvider<IPayment<AuthorizeNetClientData, AuthorizeNetSystemData>>,
+        vp: ObjectProvider<IPayment<VnPayClientData, VnPaySystemData>>,
+        zp: ObjectProvider<IPayment<ZaloPayClientData, ZaloPaySystemData>>
     ): PaymentProvider = PaymentProvider(
         an.ifAvailable,
         vp.ifAvailable,

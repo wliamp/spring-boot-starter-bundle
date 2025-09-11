@@ -5,10 +5,10 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import kotlin.collections.get
 
-internal class IZaloPay internal constructor(
-    private val props: Properties.ZaloPayProps,
+internal class IZaloPayment internal constructor(
+    private val props: PaymentProps.ZaloPayProps,
     private val webClient: WebClient
-) : IPay<ZaloPayClientData, ZaloPaySystemData> {
+) : IPayment<ZaloPayClientData, ZaloPaySystemData> {
     private val provider = "zaloPay"
 
     @Deprecated(

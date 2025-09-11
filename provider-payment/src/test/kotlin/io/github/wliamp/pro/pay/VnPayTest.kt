@@ -9,15 +9,15 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
-internal class VnPayTest : ITestSetup<Properties.VnPayProps, IPay<VnPayClientData, VnPaySystemData>> {
+internal class VnPayTest : ITestSetup<PaymentProps.VnPayProps, IPayment<VnPayClientData, VnPaySystemData>> {
     override lateinit var server: MockWebServer
     override lateinit var client: WebClient
-    override lateinit var props: Properties.VnPayProps
-    override lateinit var provider: IPay<VnPayClientData, VnPaySystemData>
+    override lateinit var props: PaymentProps.VnPayProps
+    override lateinit var provider: IPayment<VnPayClientData, VnPaySystemData>
     override val mapper = ObjectMapper()
 
-    override fun buildProps(): Properties.VnPayProps =
-        Properties.VnPayProps().apply {
+    override fun buildProps(): PaymentProps.VnPayProps =
+        PaymentProps.VnPayProps().apply {
             baseUrl = ""
             returnUrl = "http://test-return-url"
             secretKey = "test-secret-key"
@@ -28,9 +28,9 @@ internal class VnPayTest : ITestSetup<Properties.VnPayProps, IPay<VnPayClientDat
         }
 
     override fun buildProvider(
-        props: Properties.VnPayProps,
+        props: PaymentProps.VnPayProps,
         client: WebClient
-    ) = IVnPay(props, client)
+    ) = IVnPayment(props, client)
 
     @BeforeEach
     fun setup() {
@@ -86,13 +86,13 @@ internal class VnPayTest : ITestSetup<Properties.VnPayProps, IPay<VnPayClientDat
 
     @Test
     fun `sale should error if missing config`() {
-        val badProps = Properties.VnPayProps().apply {
+        val badProps = PaymentProps.VnPayProps().apply {
             baseUrl = ""
             returnUrl = ""
             secretKey = ""
             tmnCode = ""
         }
-        val badProvider = IVnPay(badProps, client)
+        val badProvider = IVnPayment(badProps, client)
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
         StepVerifier.create(badProvider.sale(clientData, systemData))
@@ -123,12 +123,12 @@ internal class VnPayTest : ITestSetup<Properties.VnPayProps, IPay<VnPayClientDat
 
     @Test
     fun `refund should error if missing config`() {
-        val badProps = Properties.VnPayProps().apply {
+        val badProps = PaymentProps.VnPayProps().apply {
             baseUrl = ""
             secretKey = ""
             tmnCode = ""
         }
-        val badProvider = IVnPay(badProps, client)
+        val badProvider = IVnPayment(badProps, client)
         val clientData = VnPayClientData(vnpAmount = "1000")
         val systemData = VnPaySystemData()
         StepVerifier.create(badProvider.refund(clientData, systemData))
