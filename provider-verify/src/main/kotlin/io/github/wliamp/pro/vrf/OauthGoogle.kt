@@ -4,7 +4,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-internal class IGoogle internal constructor(
+internal class OauthGoogle internal constructor(
     private val props: OauthProps.GoogleProps,
     private val webClient: WebClient
 ) : IOauth {

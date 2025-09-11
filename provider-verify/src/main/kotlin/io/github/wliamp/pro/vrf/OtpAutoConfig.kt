@@ -20,12 +20,12 @@ internal class OtpAutoConfig private constructor(
         havingValue = "true",
         matchIfMissing = true
     )
-    fun f(): IFirebase = IFirebase(props.firebase, WebClient.builder().build())
+    fun f(): OtpFirebase = OtpFirebase(props.firebase, WebClient.builder().build())
 
     @Bean
     @ConditionalOnMissingBean
     fun otp(
-        f: ObjectProvider<IFirebase>
+        f: ObjectProvider<OtpFirebase>
     ): OtpProvider = OtpProvider(
         f.ifAvailable
     )
