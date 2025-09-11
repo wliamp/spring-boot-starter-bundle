@@ -33,7 +33,8 @@ internal class IGoogle internal constructor(
     private fun fetchGoogle(token: String) =
         webClient.fetchPayload(
             HttpMethod.GET,
-            "${props.baseUrl}${props.uri}?id_token=$token",
-            oauth
+            "${props.baseUrl}${props.uri}",
+            oauth,
+            queryParams = mapOf("id_token" to token)
         )
 }
