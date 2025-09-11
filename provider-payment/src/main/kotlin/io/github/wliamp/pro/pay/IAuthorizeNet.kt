@@ -7,9 +7,9 @@ import reactor.core.publisher.Mono
 import kotlin.collections.get
 
 internal class IAuthorizeNet internal constructor(
-    private val props: Properties.AuthorizeNetProps,
+    private val props: PaymentProps.AuthorizeNetProps,
     private val webClient: WebClient
-) : IPay<AuthorizeNetClientData, AuthorizeNetSystemData> {
+) : IPayment<AuthorizeNetClientData, AuthorizeNetSystemData> {
     private val provider = "authorizeNet"
 
     override fun authorize(client: AuthorizeNetClientData, system: AuthorizeNetSystemData): Mono<Any> =

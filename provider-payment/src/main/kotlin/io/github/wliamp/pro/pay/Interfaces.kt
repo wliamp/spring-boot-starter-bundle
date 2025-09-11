@@ -2,7 +2,7 @@ package io.github.wliamp.pro.pay
 
 import reactor.core.publisher.Mono
 
-interface IPay<C : OClient, S : OSystem> {
+interface IPayment<C : OClient, S : OSystem> {
     fun authorize(client: C, system: S): Mono<Any>
     fun capture(client: C, system: S): Mono<Any>
     fun sale(client: C, system: S): Mono<Any>

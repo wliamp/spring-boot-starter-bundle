@@ -1,10 +1,14 @@
 package io.github.wliamp.pro.pay
 
-import org.springframework.stereotype.Component
-
-@Component
 class PaymentProvider(
-    val authorizeNet: IPay<AuthorizeNetClientData, AuthorizeNetSystemData>?,
-    val vnPay: IPay<VnPayClientData, VnPaySystemData>?,
-    val zaloPay: IPay<ZaloPayClientData, ZaloPaySystemData>?
-)
+    val authorizeNet: IPayment<AuthorizeNetClientData, AuthorizeNetSystemData>?,
+    val vnPay: IPayment<VnPayClientData, VnPaySystemData>?,
+    val zaloPay: IPayment<ZaloPayClientData, ZaloPaySystemData>?
+) {
+    fun of(payment: Payment): IPayment<*, *>? =
+        when (payment) {
+            Payment.AUTHORIZE_NET -> authorizeNet
+            Payment.VN_PAY -> vnPay
+            Payment.ZALO_PAY -> zaloPay
+        }
+}

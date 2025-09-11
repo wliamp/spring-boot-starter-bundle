@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner
 
 class PropsBindingTest {
     private val baseRunner = ApplicationContextRunner()
-        .withConfiguration(AutoConfigurations.of(AutoConfig::class.java))
+        .withConfiguration(AutoConfigurations.of(PaymentAutoConfig::class.java))
 
     @Test
     fun `props binding should map values correctly`() {
@@ -19,7 +19,7 @@ class PropsBindingTest {
             "provider.payment.zalo-pay.app-id=1001",
             "provider.payment.zalo-pay.key1=zalo-secret"
         ).run { ctx ->
-            val props = ctx.getBean(Properties::class.java)
+            val props = ctx.getBean(PaymentProps::class.java)
 
             assertThat(props.authorizeNet.apiLoginId).isEqualTo("test-login")
             assertThat(props.authorizeNet.transactionKey).isEqualTo("test-key")
@@ -33,9 +33,9 @@ class PropsBindingTest {
     @Test
     fun `context loads without any config (defaults)`() {
         baseRunner.run { ctx ->
-            assertThat(ctx).hasSingleBean(Properties::class.java)
+            assertThat(ctx).hasSingleBean(PaymentProps::class.java)
 
-            val props = ctx.getBean(Properties::class.java)
+            val props = ctx.getBean(PaymentProps::class.java)
             assertThat(props.authorizeNet.baseUrl)
                 .isEqualTo("https://api2.authorize.net/xml/v1/request.api")
             assertThat(props.vnPay.expiredMinutes).isEqualTo(15)

@@ -5,10 +5,10 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import kotlin.collections.get
 
-internal class IZaloPay internal constructor(
-    private val props: Properties.ZaloPayProps,
+internal class IZaloPayment internal constructor(
+    private val props: PaymentProps.ZaloPayProps,
     private val webClient: WebClient
-) : IPay<ZaloPayClientData, ZaloPaySystemData> {
+) : IPayment<ZaloPayClientData, ZaloPaySystemData> {
     private val provider = "zaloPay"
 
     @Deprecated(
@@ -34,7 +34,7 @@ internal class IZaloPay internal constructor(
             val appUser = system.appUser ?: ""
             val appTransId = system.appTransId ?: ""
             val appTime = System.currentTimeMillis().toString()
-            val amount = client.amount ?: 0
+            val amount: Long = client.amount?.toNumber() ?: 0
             val item = client.item ?: "[]"
             val description = client.description ?: "Payment for the order #${appTransId}"
             val embedData = client.embedData ?: "{}"
@@ -92,7 +92,7 @@ internal class IZaloPay internal constructor(
                     generateCode((37 - "$appId".length).coerceAtLeast(0))
             val zpTransId = system.zpTransId ?: ""
             val amount = client.amount ?: 0
-            val refundFeeAmount = system.refundFeeAmount
+            val refundFeeAmount: Long = system.refundFeeAmount?.toNumber() ?: 0
             val timestamp = System.currentTimeMillis()
             val description = client.description ?: "Refund for order ${system.appTransId}"
             val body = mutableMapOf<String, Any>(

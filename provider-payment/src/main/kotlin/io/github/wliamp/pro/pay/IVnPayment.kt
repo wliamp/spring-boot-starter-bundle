@@ -6,10 +6,10 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
-internal class IVnPay internal constructor(
-    private val props: Properties.VnPayProps,
+internal class IVnPayment internal constructor(
+    private val props: PaymentProps.VnPayProps,
     private val webClient: WebClient
-) : IPay<VnPayClientData, VnPaySystemData> {
+) : IPayment<VnPayClientData, VnPaySystemData> {
     private val provider = "vnPay"
 
     @Deprecated(

@@ -1,7 +1,7 @@
 package io.github.wliamp.pro.pay
 
 data class AuthorizeNetClientData(
-    val amount: String?,
+    val amount: String? = null,
 ) : OClient() {
     companion object {
         @JvmStatic
@@ -20,9 +20,9 @@ data class AuthorizeNetClientData(
 }
 
 data class AuthorizeNetSystemData(
-    val description: String?,
-    val orderId: String?,
-    val refTransId: String?,
+    val description: String? = null,
+    val orderId: String? = null,
+    val refTransId: String? = null,
 ) : OSystem() {
     companion object {
         @JvmStatic
