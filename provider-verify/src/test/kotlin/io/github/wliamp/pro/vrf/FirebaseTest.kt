@@ -1,57 +1,42 @@
 package io.github.wliamp.pro.vrf
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FirebaseTest {
+internal class FirebaseTest : ITestSetup<OtpProps.FirebaseProps, IOtp> {
+    override val server = MockWebServer()
+    override lateinit var client: WebClient
+    override lateinit var props: OtpProps.FirebaseProps
+    override lateinit var provider: IOtp
+    override val mapper = ObjectMapper()
 
-    private lateinit var server: MockWebServer
-    private lateinit var client: WebClient
-    private lateinit var props: OtpProps.FirebaseProps
-    private lateinit var provider: IFirebase
-    private val mapper = ObjectMapper()
+    override fun buildProps() = OtpProps.FirebaseProps(
+        baseUrl = "",
+        version = "v1",
+        uri = "/verify",
+        apiKey = "dummy-key"
+    )
+
+    override fun buildProvider(props: OtpProps.FirebaseProps, client: WebClient) =
+        IFirebase(props, client)
 
     @BeforeAll
-    fun beforeAll() {
-        server = MockWebServer()
-        server.start()
-    }
+    fun beforeAll() = server.start()
 
     @AfterAll
-    fun afterAll() {
-        server.shutdown()
-    }
+    fun afterAll() = server.shutdown()
 
     @BeforeEach
-    fun setup() {
-        val base = server.url("/").toString().removeSuffix("/")
-        client = WebClient.builder().baseUrl(base).build()
-        props = OtpProps.FirebaseProps(
-            baseUrl = "",
-            version = "v1",
-            uri = "/verify",
-            apiKey = "dummy-key"
-        )
-        provider = IFirebase(props, client)
-    }
-
-    private fun enqueueJson(body: Any, code: Int = 200) {
-        server.enqueue(
-            MockResponse()
-                .setResponseCode(code)
-                .setHeader("Content-Type", "application/json")
-                .setBody(mapper.writeValueAsString(body))
-        )
-    }
+    fun setup() = initServerAndClient()
 
     @Test
     fun `verify returns true when phoneNumber present`() {
-        enqueueJson(mapOf("phoneNumber" to "+84900123456"))
+        enqueueJson(server, mapOf("phoneNumber" to "+84900123456"))
 
         StepVerifier.create(provider.verify("dummy-code"))
             .expectNext(true)
@@ -60,7 +45,7 @@ class FirebaseTest {
 
     @Test
     fun `verify errors when phoneNumber missing`() {
-        enqueueJson(mapOf("sessionInfo" to "123"))
+        enqueueJson(server, mapOf("sessionInfo" to "123"))
 
         StepVerifier.create(provider.verify("dummy-code"))
             .expectError(VerifyParseException::class.java)
@@ -70,16 +55,18 @@ class FirebaseTest {
     @Test
     fun `getInfo returns full payload`() {
         val payload = mapOf("phoneNumber" to "+84900123456", "sessionInfo" to "dummy-code")
-        enqueueJson(payload)
+        enqueueJson(server, payload)
 
         StepVerifier.create(provider.getInfo("dummy-code"))
-            .expectNextMatches { it["phoneNumber"] == "+84900123456" && it["sessionInfo"] == "dummy-code" }
+            .expectNextMatches {
+                it["phoneNumber"] == "+84900123456" && it["sessionInfo"] == "dummy-code"
+            }
             .verifyComplete()
     }
 
     @Test
     fun `verify builds correct Firebase uri with body`() {
-        enqueueJson(mapOf("phoneNumber" to "+84900123456"))
+        enqueueJson(server, mapOf("phoneNumber" to "+84900123456"))
 
         StepVerifier.create(provider.verify("dummy-code"))
             .expectNext(true)
@@ -87,10 +74,10 @@ class FirebaseTest {
 
         val recorded = server.takeRequest()
 
-        Assertions.assertEquals("/v1/verify", recorded.requestUrl?.encodedPath)
-        Assertions.assertEquals("key=dummy-key", recorded.requestUrl?.encodedQuery)
+        assertEquals("/v1/verify", recorded.requestUrl?.encodedPath)
+        assertEquals("key=dummy-key", recorded.requestUrl?.encodedQuery)
 
-        Assertions.assertEquals(
+        assertEquals(
             """{"sessionInfo":"dummy-code","code":"dummy-code"}""",
             recorded.body.readUtf8()
         )

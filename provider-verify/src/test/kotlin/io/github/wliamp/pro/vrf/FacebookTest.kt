@@ -1,12 +1,20 @@
 package io.github.wliamp.pro.vrf
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.test.StepVerifier
 
-private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
-    OauthProps.FacebookProps().apply {
+internal class FacebookTest : ITestSetup<OauthProps.FacebookProps, IOauth> {
+    override lateinit var server: MockWebServer
+    override lateinit var client: WebClient
+    override lateinit var props: OauthProps.FacebookProps
+    override lateinit var provider: IOauth
+    override val mapper = ObjectMapper()
+
+    override fun buildProps() = OauthProps.FacebookProps().apply {
         appId = "test-app"
         accessToken = "test-access-token"
         baseUrl = ""
@@ -14,13 +22,25 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
         vrfUri = "/debug_token"
         infoUri = "/me"
     }
-}) {
-    override fun buildProvider(props: OauthProps.FacebookProps, client: WebClient): IOauth =
+
+    override fun buildProvider(props: OauthProps.FacebookProps, client: WebClient) =
         IFacebook(props, client)
+
+    @BeforeEach
+    fun setup() {
+        server = MockWebServer()
+        server.start()
+        initServerAndClient()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        server.shutdown()
+    }
 
     @Test
     fun `verify returns true when app_id matches`() {
-        enqueueJson(mapOf("data" to mapOf("app_id" to "test-app")))
+        enqueueJson(server, mapOf("data" to mapOf("app_id" to "test-app")))
 
         StepVerifier.create(provider.verify("dummy-token"))
             .expectNext(true)
@@ -29,7 +49,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
 
     @Test
     fun `verify returns false when app_id mismatches`() {
-        enqueueJson(mapOf("data" to mapOf("app_id" to "other-app")))
+        enqueueJson(server, mapOf("data" to mapOf("app_id" to "other-app")))
 
         StepVerifier.create(provider.verify("dummy-token"))
             .expectNext(false)
@@ -38,7 +58,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
 
     @Test
     fun `verify errors when data missing`() {
-        enqueueJson(mapOf("no_data" to "oops"))
+        enqueueJson(server, mapOf("no_data" to "oops"))
 
         StepVerifier.create(provider.verify("dummy-token"))
             .expectError(VerifyParseException::class.java)
@@ -47,7 +67,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
 
     @Test
     fun `verify errors when app_id missing`() {
-        enqueueJson(mapOf("data" to mapOf("id" to "123456")))
+        enqueueJson(server, mapOf("data" to mapOf("id" to "123456")))
 
         StepVerifier.create(provider.verify("dummy-token"))
             .expectError(VerifyParseException::class.java)
@@ -60,10 +80,12 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
             appId = ""
             accessToken = "test-access-token"
             baseUrl = ""
+            vrfUri = "/debug_token"
+            infoUri = "/me"
         }
-        val f = IFacebook(bad, client)
+        val fb = IFacebook(bad, client)
 
-        StepVerifier.create(f.verify("dummy-token"))
+        StepVerifier.create(fb.verify("dummy-token"))
             .expectError(VerifyConfigException::class.java)
             .verify()
     }
@@ -74,34 +96,19 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
             appId = "test-app"
             accessToken = ""
             baseUrl = ""
+            vrfUri = "/debug_token"
+            infoUri = "/me"
         }
-        val f = IFacebook(bad, client)
+        val fb = IFacebook(bad, client)
 
-        StepVerifier.create(f.verify("dummy-token"))
+        StepVerifier.create(fb.verify("dummy-token"))
             .expectError(VerifyConfigException::class.java)
             .verify()
     }
 
     @Test
-    fun `getInfo works when fields config empty`() {
-        val bad = OauthProps.FacebookProps().apply {
-            appId = "test-app"
-            accessToken = "test-access-token"
-            baseUrl = ""
-            fields = ""
-        }
-        val f = IFacebook(bad, client)
-
-        enqueueJson(mapOf("id" to "456"))
-
-        StepVerifier.create(f.getInfo("dummy-token"))
-            .expectNextMatches { it["id"] == "456" }
-            .verifyComplete()
-    }
-
-    @Test
     fun `verify builds correct facebook uri`() {
-        enqueueJson(mapOf("data" to mapOf("app_id" to "test-app")))
+        enqueueJson(server, mapOf("data" to mapOf("app_id" to "test-app")))
 
         StepVerifier.create(provider.verify("dummy-token"))
             .expectNext(true)
@@ -109,14 +116,39 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "${props.vrfUri}?input_token=dummy-token&access_token=test-access-token",
+            "${props.vrfUri}?input_token=dummy-token&access_token=${props.accessToken}",
+            recorded.path
+        )
+    }
+
+    @Test
+    fun `getInfo works when fields config empty`() {
+        val customProps = OauthProps.FacebookProps().apply {
+            appId = "test-app"
+            accessToken = "test-access-token"
+            baseUrl = ""
+            fields = ""
+            vrfUri = "/debug_token"
+            infoUri = "/me"
+        }
+        val fb = IFacebook(customProps, client)
+
+        enqueueJson(server, mapOf("id" to "456"))
+
+        StepVerifier.create(fb.getInfo("dummy-token"))
+            .expectNextMatches { it["id"] == "456" }
+            .verifyComplete()
+
+        val recorded = server.takeRequest()
+        assertEquals(
+            "${customProps.infoUri}?access_token=dummy-token",
             recorded.path
         )
     }
 
     @Test
     fun `getInfo builds correct uri without fields`() {
-        enqueueJson(mapOf("id" to "123", "name" to "Alice"))
+        enqueueJson(server, mapOf("id" to "123", "name" to "Alice"))
 
         StepVerifier.create(provider.getInfo("dummy-token"))
             .expectNextMatches { it["id"] == "123" && it["name"] == "Alice" }
@@ -134,14 +166,14 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
         val customProps = OauthProps.FacebookProps().apply {
             appId = "test-app"
             accessToken = "test-access-token"
-            baseUrl = props.baseUrl
+            baseUrl = ""
             fields = "id,name"
-            vrfUri = props.vrfUri
-            infoUri = props.infoUri
+            vrfUri = "/debug_token"
+            infoUri = "/me"
         }
         val fb = IFacebook(customProps, client)
 
-        enqueueJson(mapOf("id" to "123", "name" to "Alice"))
+        enqueueJson(server, mapOf("id" to "123", "name" to "Alice"))
 
         StepVerifier.create(fb.getInfo("dummy-token"))
             .expectNextMatches { it["id"] == "123" && it["name"] == "Alice" }
@@ -149,7 +181,7 @@ private class FacebookTest : OauthTest<OauthProps.FacebookProps>({ _ ->
 
         val recorded = server.takeRequest()
         assertEquals(
-            "${props.infoUri}?access_token=dummy-token&fields=id,name",
+            "${customProps.infoUri}?access_token=dummy-token&fields=${customProps.fields}",
             recorded.path
         )
     }
