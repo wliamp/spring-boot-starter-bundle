@@ -24,12 +24,7 @@ internal fun generateCode(size: Int): String =
 
 internal fun formatDate(input: Any?, pattern: String): String =
     when (input) {
-        is String -> runCatching {
-            LocalDateTime.parse(input, DateTimeFormatter.ISO_DATE_TIME)
-        }.getOrElse {
-            LocalDateTime.parse(input, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        }
-
+        is String -> LocalDateTime.parse(input, DateTimeFormatter.ofPattern(pattern))
         is Long -> LocalDateTime.ofInstant(Instant.ofEpochMilli(input), ZoneId.systemDefault())
         is LocalDateTime -> input
         else -> throw IllegalArgumentException("Unsupported date type: ${input!!::class}")

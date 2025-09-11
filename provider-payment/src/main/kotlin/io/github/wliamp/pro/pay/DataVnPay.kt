@@ -1,26 +1,26 @@
 package io.github.wliamp.pro.pay
 
 data class VnPayClientData(
-    val vnpAmount: String?,
-    val vnpBankCode: String?,
-    val vnpCreateBy: String?,
-    val vnpIpAddr: String?,
-    val vnpLocale: String?,
-    val vnpBillMobile: String?,
-    val vnpBillEmail: String?,
-    val vnpBillFirstName: String?,
-    val vnpBillLastName: String?,
-    val vnpBillAddress: String?,
-    val vnpBillCity: String?,
-    val vnpBillCountry: String?,
-    val vnpBillState: String?,
-    val vnpInvPhone: String?,
-    val vnpInvEmail: String?,
-    val vnpInvCustomer: String?,
-    val vnpInvAddress: String?,
-    val vnpInvCompany: String?,
-    val vnpInvTaxcode: String?,
-    val vnpInvType: String?
+    val vnpAmount: String? = null,
+    val vnpBankCode: String? = null,
+    val vnpCreateBy: String? = null,
+    val vnpIpAddr: String? = null,
+    val vnpLocale: String? = null,
+    val vnpBillMobile: String? = null,
+    val vnpBillEmail: String? = null,
+    val vnpBillFirstName: String? = null,
+    val vnpBillLastName: String? = null,
+    val vnpBillAddress: String? = null,
+    val vnpBillCity: String? = null,
+    val vnpBillCountry: String? = null,
+    val vnpBillState: String? = null,
+    val vnpInvPhone: String? = null,
+    val vnpInvEmail: String? = null,
+    val vnpInvCustomer: String? = null,
+    val vnpInvAddress: String? = null,
+    val vnpInvCompany: String? = null,
+    val vnpInvTaxcode: String? = null,
+    val vnpInvType: String? = null
 ) : OClient() {
     companion object {
         @JvmStatic
@@ -87,15 +87,15 @@ data class VnPayClientData(
 }
 
 data class VnPaySystemData(
-    val vnpCreateBy: String?,
-    val vnpIpAddr: String?,
-    val vnpOrderInfo: String?,
-    val vnpOrderType: String?,
-    val vnpRequestId: String?,
-    val vnpTransactionDate: String?,
-    val vnpTransactionNo: String?,
-    val vnpTransactionType: String?,
-    val vnpTxnRef: String?
+    val vnpCreateBy: String? = null,
+    val vnpIpAddr: String? = null,
+    val vnpOrderInfo: String? = null,
+    val vnpOrderType: String? = null,
+    val vnpRequestId: String? = null,
+    val vnpTransactionDate: String? = null,
+    val vnpTransactionNo: String? = null,
+    val vnpTransactionType: String? = null,
+    val vnpTxnRef: String? = null
 
 ) : OSystem() {
     companion object {

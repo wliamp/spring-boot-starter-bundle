@@ -1,12 +1,12 @@
 package io.github.wliamp.pro.pay
 
 data class ZaloPayClientData(
-    val amount: Long?,
-    val description: String?,
-    val deviceInfo: String?,
-    val embedData: String?,
-    val item: String?,
-    val bankCode: String?
+    val amount: Long? = null,
+    val description: String? = null,
+    val deviceInfo: String? = null,
+    val embedData: String? = null,
+    val item: String? = null,
+    val bankCode: String? = null
 ) : OClient() {
     companion object {
         @JvmStatic
@@ -37,11 +37,11 @@ data class ZaloPayClientData(
 }
 
 data class ZaloPaySystemData(
-    val appUser: String?,
-    val appTransId: String?,
-    val callbackUrl: String?,
-    val refundFeeAmount: Long,
-    val zpTransId: String?,
+    val appUser: String? = null,
+    val appTransId: String? = null,
+    val callbackUrl: String? = null,
+    val refundFeeAmount: Long? = null,
+    val zpTransId: String? = null,
 ) : OSystem() {
     companion object {
         @JvmStatic
@@ -53,12 +53,12 @@ data class ZaloPaySystemData(
         private var appTransId: String? = null
         private var callbackUrl: String? = null
         private var zpTransId: String? = null
-        private var refundFeeAmount: Long = 0
+        private var refundFeeAmount: Long? = null
 
         fun appUser(appUser: String?) = apply { this.appUser = appUser }
         fun appTransId(appTransId: String?) = apply { this.appTransId = appTransId }
         fun callbackUrl(callbackUrl: String?) = apply { this.callbackUrl = callbackUrl }
-        fun refundFeeAmount(refundFeeAmount: Long) = apply { this.refundFeeAmount = refundFeeAmount }
+        fun refundFeeAmount(refundFeeAmount: Long?) = apply { this.refundFeeAmount = refundFeeAmount }
         fun zpTransId(zpTransId: String?) = apply { this.zpTransId = zpTransId }
 
         fun build() = ZaloPaySystemData(
