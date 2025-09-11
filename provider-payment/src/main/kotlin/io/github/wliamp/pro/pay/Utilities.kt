@@ -9,6 +9,15 @@ import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
+internal inline fun <reified T : Number> String.toNumber(): T? =
+    when (T::class) {
+        Int::class -> this.toIntOrNull() as T?
+        Long::class -> this.toLongOrNull() as T?
+        Float::class -> this.toFloatOrNull() as T?
+        Double::class -> this.toDoubleOrNull() as T?
+        else -> null
+    }
+
 internal fun MutableMap<String, Any>.optional(key: String, value: Any?) {
     when (value) {
         null -> return
