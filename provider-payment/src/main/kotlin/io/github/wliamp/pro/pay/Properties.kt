@@ -19,8 +19,8 @@ internal data class Properties(
 
     data class VnPayProps(
         var baseUrl: String = "https://sandbox.vnpayment.vn",
-        val saleUri: String = "/paymentv2/vpcpay.html",
-        val refundUri: String = "/merchant_webapi/api/transaction",
+        var saleUri: String = "/paymentv2/vpcpay.html",
+        var refundUri: String = "/merchant_webapi/api/transaction",
         var expiredMinutes: Long = 15,
         var returnUrl: String = "",
         var secretKey: String = "",
@@ -28,12 +28,12 @@ internal data class Properties(
     )
 
     data class ZaloPayProps(
-        val baseUrl: String = "https://sb-openapi.zalopay.vn",
-        val saleUri: String = "/v2/create",
-        val refundUri: String = "/v2/refund",
-        val expireDurationSeconds: Long = 86400,
-        val appId: Int = 0,
-        val key1: String = "",
-        val subAppId: String = ""
+        var baseUrl: String = "https://sb-openapi.zalopay.vn",
+        var saleUri: String = "/v2/create",
+        var refundUri: String = "/v2/refund",
+        var expireDurationSeconds: Long = 86400,
+        var appId: Int = 0,
+        var key1: String = "",
+        var subAppId: String = ""
     )
 }
